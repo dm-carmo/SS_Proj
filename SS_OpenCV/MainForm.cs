@@ -304,5 +304,45 @@ namespace SS_OpenCV
 
             Cursor = Cursors.Default; // normal cursor 
         }
+
+        int mouseX, mouseY;
+        bool mouseFlag = false;
+
+        private void ImageViewer_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(mouseFlag)
+            {
+                mouseX = e.X;
+                mouseY = e.Y;
+
+                mouseFlag = false;
+            }
+        }
+
+        private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            InputBox zoom = new InputBox("zoom?");
+
+            mouseFlag = true;
+            while (mouseFlag) Application.DoEvents();
+
+            zoom.ShowDialog();
+
+            double factor = Convert.ToSingle(zoom.ValueTextBox.Text);
+
+            ImageClass.Zoom(img, factor, mouseX, mouseY);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
     }
 }

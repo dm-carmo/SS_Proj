@@ -253,5 +253,47 @@ namespace SS_OpenCV
                 }
             }
         }
+
+        internal static void Zoom(Image<Bgr, byte> img, double factor, int mouseX, int mouseY)
+        {
+            if (factor == 1) return;
+            unsafe
+            {
+                MIplImage copy = img.Copy().MIplImage;
+                MIplImage m = img.MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+                byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+
+                int widthstep = m.widthStep;
+                int nC = m.nChannels;
+                int width = img.Width;
+                int height = img.Height;
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        int ny = (int)((mouseY + y) / factor);
+                        int nx = (int)((mouseX + x) / factor);
+                        byte* orig = dataPtrCopy + ny * widthstep + nx * nC;
+                        byte* dest = dataPtr + y * widthstep + x * nC;
+
+                        if (ny > 0 && ny < height && nx > 0 && nx < width)
+                        {
+                            dest[0] = orig[0];
+                            dest[1] = orig[1];
+                            dest[2] = orig[2];
+                        }
+
+                        else
+                        {
+                            dest[0] = 0;
+                            dest[1] = 0;
+                            dest[2] = 0;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

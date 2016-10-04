@@ -100,3 +100,14 @@ C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_OpenCV\obj\Deb
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_OpenCV\obj\Debug\SS_OpenCV.MainForm.resources
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_OpenCV\obj\Debug\SS_OpenCV.Properties.Resources.resources
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.GenerateResource.Cache
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\bin\Debug\SS_OpenCV.exe.config
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.exe
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\bin\Debug\SS_OpenCV.exe
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\bin\Debug\SS_OpenCV.pdb
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.csprojResolveAssemblyReference.cache
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.AuthorsForm.resources
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.InputBox.resources
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.MainForm.resources
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.Properties.Resources.resources
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.csproj.GenerateResource.Cache
