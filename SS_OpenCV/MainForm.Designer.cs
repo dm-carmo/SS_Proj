@@ -57,6 +57,8 @@
             this.autoresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ImageViewer = new System.Windows.Forms.PictureBox();
+            this.meanNoiseReductionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.x3ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ImageViewer)).BeginInit();
@@ -128,7 +130,7 @@
             // undoToolStripMenuItem
             // 
             this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
-            this.undoToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.undoToolStripMenuItem.Text = "Undo";
             this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
             // 
@@ -246,6 +248,8 @@
             // 
             // filtersToolStripMenuItem
             // 
+            this.filtersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.meanNoiseReductionToolStripMenuItem});
             this.filtersToolStripMenuItem.Name = "filtersToolStripMenuItem";
             this.filtersToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.filtersToolStripMenuItem.Text = "Filters";
@@ -284,6 +288,21 @@
             this.ImageViewer.TabIndex = 6;
             this.ImageViewer.TabStop = false;
             this.ImageViewer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ImageViewer_MouseClick);
+            // 
+            // meanNoiseReductionToolStripMenuItem
+            // 
+            this.meanNoiseReductionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.x3ToolStripMenuItem});
+            this.meanNoiseReductionToolStripMenuItem.Name = "meanNoiseReductionToolStripMenuItem";
+            this.meanNoiseReductionToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.meanNoiseReductionToolStripMenuItem.Text = "Mean Noise Reduction";
+            // 
+            // x3ToolStripMenuItem
+            // 
+            this.x3ToolStripMenuItem.Name = "x3ToolStripMenuItem";
+            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.x3ToolStripMenuItem.Text = "3x3";
+            this.x3ToolStripMenuItem.Click += new System.EventHandler(this.x3ToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -336,6 +355,8 @@
         private System.Windows.Forms.ToolStripMenuItem grayGreenToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem grayBlueToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem brightnessContrastToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem meanNoiseReductionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem x3ToolStripMenuItem;
     }
 }
 

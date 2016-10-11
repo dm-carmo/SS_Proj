@@ -235,7 +235,7 @@ namespace SS_OpenCV
                         byte* orig = dataPtrCopy + ny * widthstep + nx * nC;
                         byte* dest = dataPtr + y * widthstep + x * nC;
 
-                        if (ny > 0 && ny < height && nx > 0 && nx < width)
+                        if (ny >= 0 && ny < height && nx >= 0 && nx < width)
                         {
                             dest[0] = orig[0];
                             dest[1] = orig[1];
@@ -254,9 +254,9 @@ namespace SS_OpenCV
             }
         }
 
-        internal static void Zoom(Image<Bgr, byte> img, double factor, int mouseX, int mouseY)
+        internal static void Zoom(Image<Bgr, byte> img, float factor, int mouseX, int mouseY)
         {
-            if (factor == 1) return;
+            if (factor == 1 || factor < 0) return;
             unsafe
             {
                 MIplImage copy = img.Copy().MIplImage;
@@ -273,12 +273,12 @@ namespace SS_OpenCV
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        int ny = (int)((mouseY + y) / factor);
-                        int nx = (int)((mouseX + x) / factor);
+                        int ny = (int)(y / factor + mouseY);
+                        int nx = (int)(x / factor + mouseX);
                         byte* orig = dataPtrCopy + ny * widthstep + nx * nC;
                         byte* dest = dataPtr + y * widthstep + x * nC;
 
-                        if (ny > 0 && ny < height && nx > 0 && nx < width)
+                        if (ny >= 0 && ny < height && nx >= 0 && nx < width)
                         {
                             dest[0] = orig[0];
                             dest[1] = orig[1];
@@ -292,6 +292,83 @@ namespace SS_OpenCV
                             dest[2] = 0;
                         }
                     }
+                }
+            }
+        }
+
+        internal static void MeanReduct3(Image<Bgr, byte> img)
+        {
+            unsafe
+            {
+                MIplImage m = img.MIplImage;
+                MIplImage copy = img.Copy().MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+                byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+
+                int widthstep = m.widthStep;
+                int nC = m.nChannels;
+                int width = img.Width;
+                int height = img.Height;
+
+                for (int y = 1; y < height-1; y++)
+                {
+                    for (int x = 1; x < width-1; x++)
+                    {
+                        byte* dest = dataPtr + y * widthstep + x * nC;
+                        int[] sum = {0, 0, 0};
+                        for (int j = -1; j <= 1; j++) {
+                            for (int i = -1; i <= 1; i++) {
+                                byte* orig = dataPtrCopy + (y+j) * widthstep + (x+i) * nC;
+                                sum[0] += orig[0];
+                                sum[1] += orig[1];
+                                sum[2] += orig[2];
+                            }
+                        }
+                        dest[0] = (byte)(sum[0] / 9);
+                        dest[1] = (byte)(sum[1] / 9);
+                        dest[2] = (byte)(sum[2] / 9);
+                    }
+                }
+                //margens
+                int[] sum1 = { 0, 0, 0 };
+                int[] sum2 = { 0, 0, 0 };
+                for (int y = 0; y < height; y++)
+                {
+                    byte* leftdest = dataPtr + y * widthstep;
+                    byte* rightdest = dataPtr + y * widthstep + (width - 1) * nC;
+
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            int ycord = y + j;
+                            int leftx = i;
+                            int rightx = width - 1 + i;
+                            if (ycord < 0) ycord++;
+                            if (ycord >= height) ycord--;
+                            if (leftx < 0) leftx++;
+                            if (rightx >= width) rightx++;
+                            byte* leftorig = dataPtrCopy + ycord * widthstep + leftx * nC;
+                            byte* rightorig = dataPtrCopy + ycord * widthstep + rightx * nC;
+
+                            sum1[0] += leftorig[0];
+                            sum1[1] += leftorig[1];
+                            sum1[2] += leftorig[2];
+
+                            sum2[0] += rightorig[0];
+                            sum2[1] += rightorig[1];
+                            sum2[2] += rightorig[2];
+                        }
+                    }
+
+                    leftdest[0] = (byte)(sum1[0] / 9);
+                    leftdest[1] = (byte)(sum1[1] / 9);
+                    leftdest[2] = (byte)(sum1[2] / 9);
+
+                    rightdest[0] = (byte)(sum2[0] / 9);
+                    rightdest[1] = (byte)(sum2[1] / 9);
+                    rightdest[2] = (byte)(sum2[2] / 9);
+
                 }
             }
         }

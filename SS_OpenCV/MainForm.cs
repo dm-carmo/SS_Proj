@@ -319,11 +319,28 @@ namespace SS_OpenCV
             }
         }
 
-        private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
+        private void x3ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (img == null) // verify if the image is already opened
                 return;
             Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            ImageClass.MeanReduct3(img);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.Cross; // cross cursor 
 
             //copy Undo Image
             imgUndo = img.Copy();
@@ -335,7 +352,9 @@ namespace SS_OpenCV
 
             zoom.ShowDialog();
 
-            double factor = Convert.ToSingle(zoom.ValueTextBox.Text);
+            float factor = Convert.ToSingle(zoom.ValueTextBox.Text);
+
+            Cursor = Cursors.WaitCursor; // clock cursor 
 
             ImageClass.Zoom(img, factor, mouseX, mouseY);
 
