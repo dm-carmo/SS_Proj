@@ -415,5 +415,162 @@ namespace SS_OpenCV
                 }
             }
         }
+
+        internal static void NonUniformFilter(Image<Bgr, byte> img, int[,] mat, int weight)
+        {
+            unsafe
+            {
+                MIplImage m = img.MIplImage;
+                MIplImage copy = img.Copy().MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+                byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+
+                int widthstep = m.widthStep;
+                int nC = m.nChannels;
+                int width = img.Width;
+                int height = img.Height;
+
+                for (int y = 1; y < height - 1; y++)
+                {
+                    for (int x = 1; x < width - 1; x++)
+                    {
+                        byte* dest = dataPtr + y * widthstep + x * nC;
+                        int[] sum = { 0, 0, 0 };
+                        for (int j = -1; j <= 1; j++)
+                        {
+                            for (int i = -1; i <= 1; i++)
+                            {
+                                byte* orig = dataPtrCopy + (y + j) * widthstep + (x + i) * nC;
+                                sum[0] += mat[i + 1, j + 1] * orig[0];
+                                sum[1] += mat[i + 1, j + 1] * orig[1];
+                                sum[2] += mat[i + 1, j + 1] * orig[2];
+                            }
+                        }
+                        for (int i = 0; i < sum.Length; i++)
+                        {
+                            sum[i] /= weight;
+                            if (sum[i] > 255) sum[i] = 255;
+                            else if (sum[i] < 0) sum[i] = Math.Abs(sum[i]);
+                        }
+
+                        dest[0] = (byte)(sum[0]);
+                        dest[1] = (byte)(sum[1]);
+                        dest[2] = (byte)(sum[2]);
+                    }
+                }
+
+                //cantos
+                //Superior esquerdo
+                int d0 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[0] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[0] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[0] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[0]) / weight);
+                int d1 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[1] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[1] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[1] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[1]) / weight);
+                int d2 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[2] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[2] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[2] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[2]) / weight);
+                dataPtr[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
+                dataPtr[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
+                dataPtr[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
+
+                //Superior direito
+                byte* corner = dataPtr + (width - 1) * nC;
+                byte* cornerCopy = dataPtrCopy + (width - 1) * nC;
+
+                d0 = (((mat[0, 2] + mat[1, 2] + mat[0, 1] + mat[1, 1]) * cornerCopy[0] + (mat[2, 1] + mat[2, 2]) * (cornerCopy + widthstep)[0] + (mat[1, 0] + mat[0, 0]) * (cornerCopy - nC)[0] + mat[2, 0] * (cornerCopy + widthstep - nC)[0]) / weight);
+                d1 = (((mat[0, 2] + mat[1, 2] + mat[0, 1] + mat[1, 1]) * cornerCopy[1] + (mat[2, 1] + mat[2, 2]) * (cornerCopy + widthstep)[1] + (mat[1, 0] + mat[0, 0]) * (cornerCopy - nC)[1] + mat[2, 0] * (cornerCopy + widthstep - nC)[1]) / weight);
+                d2 = (((mat[0, 2] + mat[1, 2] + mat[0, 1] + mat[1, 1]) * cornerCopy[2] + (mat[2, 1] + mat[2, 2]) * (cornerCopy + widthstep)[2] + (mat[1, 0] + mat[0, 0]) * (cornerCopy - nC)[2] + mat[2, 0] * (cornerCopy + widthstep - nC)[2]) / weight);
+
+                corner[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
+                corner[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
+                corner[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
+
+                //Inferior esquerdo
+                corner = dataPtr + (height - 1) * widthstep;
+                cornerCopy = dataPtrCopy + (height - 1) * widthstep;
+
+                d0 = (((mat[1, 1] + mat[1, 0] + mat[2, 1] + mat[2, 0]) * cornerCopy[0] + (mat[0, 1] + mat[0, 0]) * (cornerCopy - widthstep)[0] + (mat[1, 2] + mat[2, 2]) * (cornerCopy + nC)[0] + mat[0, 2] * (cornerCopy - widthstep + nC)[0]) / weight);
+                d1 = (((mat[1, 1] + mat[1, 0] + mat[2, 1] + mat[2, 0]) * cornerCopy[1] + (mat[0, 1] + mat[0, 0]) * (cornerCopy - widthstep)[1] + (mat[1, 2] + mat[2, 2]) * (cornerCopy + nC)[1] + mat[0, 2] * (cornerCopy - widthstep + nC)[1]) / weight);
+                d2 = (((mat[1, 1] + mat[1, 0] + mat[2, 1] + mat[2, 0]) * cornerCopy[2] + (mat[0, 1] + mat[0, 0]) * (cornerCopy - widthstep)[2] + (mat[1, 2] + mat[2, 2]) * (cornerCopy + nC)[2] + mat[0, 2] * (cornerCopy - widthstep + nC)[2]) / weight);
+
+                corner[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
+                corner[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
+                corner[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
+
+                //Inferior direito
+                corner = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
+                cornerCopy = dataPtrCopy + (height - 1) * widthstep + (width - 1) * nC;
+
+                d0 = (((mat[1, 1] + mat[1, 2] + mat[2, 1] + mat[2, 2]) * cornerCopy[0] + (mat[0, 1] + mat[0, 2]) * (cornerCopy - widthstep)[0] + (mat[1, 0] + mat[2, 0]) * (cornerCopy - nC)[0] + mat[0, 0] * (cornerCopy - widthstep - nC)[0]) / weight);
+                d1 = (((mat[1, 1] + mat[1, 2] + mat[2, 1] + mat[2, 2]) * cornerCopy[1] + (mat[0, 1] + mat[0, 2]) * (cornerCopy - widthstep)[1] + (mat[1, 0] + mat[2, 0]) * (cornerCopy - nC)[1] + mat[0, 0] * (cornerCopy - widthstep - nC)[1]) / weight);
+                d2 = (((mat[1, 1] + mat[1, 2] + mat[2, 1] + mat[2, 2]) * cornerCopy[2] + (mat[0, 1] + mat[0, 2]) * (cornerCopy - widthstep)[2] + (mat[1, 0] + mat[2, 0]) * (cornerCopy - nC)[2] + mat[0, 0] * (cornerCopy - widthstep - nC)[2]) / weight);
+
+                corner[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
+                corner[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
+                corner[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
+
+                //margens
+                for (int i = 1; i < width - 1; i++)
+                {
+                    //Margem superior
+                    byte* margemSup = dataPtr + i * nC;
+                    byte* margemSupCop = dataPtrCopy + i * nC;
+
+                    byte* mSupLeft = margemSupCop - nC;
+                    byte* mSupRight = margemSupCop + nC;
+
+                    d0 = (((mat[1, 1] + mat[0, 1]) * margemSupCop[0] + (mat[1, 0] + mat[0, 0]) * mSupLeft[0] + (mat[2, 1] + mat[2, 0]) * mSupRight[0] + mat[2, 1] * (margemSupCop + widthstep)[0] + mat[2, 2] * (mSupRight + widthstep)[0] + mat[2, 0] * (mSupLeft + widthstep)[0]) / weight);
+                    d1 = (((mat[1, 1] + mat[0, 1]) * margemSupCop[1] + (mat[1, 0] + mat[0, 0]) * mSupLeft[1] + (mat[2, 1] + mat[2, 0]) * mSupRight[1] + mat[2, 1] * (margemSupCop + widthstep)[1] + mat[2, 2] * (mSupRight + widthstep)[1] + mat[2, 0] * (mSupLeft + widthstep)[1]) / weight);
+                    d2 = (((mat[1, 1] + mat[0, 1]) * margemSupCop[2] + (mat[1, 0] + mat[0, 0]) * mSupLeft[2] + (mat[2, 1] + mat[2, 0]) * mSupRight[2] + mat[2, 1] * (margemSupCop + widthstep)[2] + mat[2, 2] * (mSupRight + widthstep)[2] + mat[2, 0] * (mSupLeft + widthstep)[2]) / weight);
+
+                    margemSup[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
+                    margemSup[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
+                    margemSup[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
+
+                    //Margem inferior
+                    byte* margemInf = dataPtr + (height - 1) * widthstep + i * nC;
+                    byte* margemInfCop = dataPtrCopy + (height - 1) * widthstep + i * nC;
+
+                    byte* mInfLeft = margemInfCop - nC;
+                    byte* mInfRight = margemInfCop + nC;
+
+                    d0 = (((mat[1, 1] + mat[2, 1]) * margemInfCop[0] + (mat[1, 0] + mat[2, 0]) * mInfLeft[0] + (mat[1, 2] + mat[2, 2]) * mInfRight[0] + mat[0, 1] * (margemInfCop - widthstep)[0] + mat[0, 2] * (mInfRight - widthstep)[0] + mat[0, 0] * (mInfLeft - widthstep)[0]) / weight);
+                    d1 = (((mat[1, 1] + mat[2, 1]) * margemInfCop[1] + (mat[1, 0] + mat[2, 0]) * mInfLeft[1] + (mat[1, 2] + mat[2, 2]) * mInfRight[1] + mat[0, 1] * (margemInfCop - widthstep)[1] + mat[0, 2] * (mInfRight - widthstep)[1] + mat[0, 0] * (mInfLeft - widthstep)[1]) / weight);
+                    d2 = (((mat[1, 1] + mat[2, 1]) * margemInfCop[2] + (mat[1, 0] + mat[2, 0]) * mInfLeft[2] + (mat[1, 2] + mat[2, 2]) * mInfRight[2] + mat[0, 1] * (margemInfCop - widthstep)[2] + mat[0, 2] * (mInfRight - widthstep)[2] + mat[0, 0] * (mInfLeft - widthstep)[2]) / weight);
+
+                    margemInf[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
+                    margemInf[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
+                    margemInf[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
+                }
+
+                for (int i = 1; i < height - 1; i++)
+                {
+                    //Margem esquerda
+                    byte* margemEsq = dataPtr + i * widthstep;
+                    byte* margemEsqCop = dataPtrCopy + i * widthstep;
+
+                    byte* mEsqUp = margemEsqCop - widthstep;
+                    byte* mEsqDown = margemEsqCop + widthstep;
+
+                    d0 = (((mat[1, 1] + mat[1, 0]) * margemEsqCop[0] + (mat[0, 1] + mat[0, 0]) * mEsqUp[0] + (mat[2, 1] + mat[2, 0]) * mEsqDown[0] + mat[1, 2] * (margemEsqCop + nC)[0] + mat[2, 2] * (mEsqDown + nC)[0] + mat[0, 2] * (mEsqUp + nC)[0]) / weight);
+                    d1 = (((mat[1, 1] + mat[1, 0]) * margemEsqCop[1] + (mat[0, 1] + mat[0, 0]) * mEsqUp[1] + (mat[2, 1] + mat[2, 0]) * mEsqDown[1] + mat[1, 2] * (margemEsqCop + nC)[1] + mat[2, 2] * (mEsqDown + nC)[1] + mat[0, 2] * (mEsqUp + nC)[1]) / weight);
+                    d2 = (((mat[1, 1] + mat[1, 0]) * margemEsqCop[2] + (mat[0, 1] + mat[0, 0]) * mEsqUp[2] + (mat[2, 1] + mat[2, 0]) * mEsqDown[2] + mat[1, 2] * (margemEsqCop + nC)[2] + mat[2, 2] * (mEsqDown + nC)[2] + mat[0, 2] * (mEsqUp + nC)[2]) / weight);
+
+                    margemEsq[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
+                    margemEsq[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
+                    margemEsq[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
+
+                    //Margem direita
+                    byte* margemDir = dataPtr + (width - 1) * nC + i * widthstep;
+                    byte* margemDirCop = dataPtrCopy + (width - 1) * nC + i * widthstep;
+
+                    byte* mDirUp = margemDirCop - widthstep;
+                    byte* mDirDown = margemDirCop + widthstep;
+
+                    d0 = (((mat[1, 1] + mat[1, 2]) * margemDirCop[0] + (mat[0, 1] + mat[0, 2]) * mDirUp[0] + (mat[2, 1] + mat[2, 2]) * mDirDown[0] + mat[1, 0] * (margemDirCop - nC)[0] + mat[2, 0] * (mDirDown - nC)[0] + mat[0, 0] * (mDirUp - nC)[0]) / weight);
+                    d1 = (((mat[1, 1] + mat[1, 2]) * margemDirCop[1] + (mat[0, 1] + mat[0, 2]) * mDirUp[1] + (mat[2, 1] + mat[2, 2]) * mDirDown[1] + mat[1, 0] * (margemDirCop - nC)[1] + mat[2, 0] * (mDirDown - nC)[1] + mat[0, 0] * (mDirUp - nC)[1]) / weight);
+                    d2 = (((mat[1, 1] + mat[1, 2]) * margemDirCop[2] + (mat[0, 1] + mat[0, 2]) * mDirUp[2] + (mat[2, 1] + mat[2, 2]) * mDirDown[2] + mat[1, 0] * (margemDirCop - nC)[2] + mat[2, 0] * (mDirDown - nC)[2] + mat[0, 0] * (mDirUp - nC)[2]) / weight);
+
+                    margemDir[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
+                    margemDir[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
+                    margemDir[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
+                }
+            }
+        }
     }
 }

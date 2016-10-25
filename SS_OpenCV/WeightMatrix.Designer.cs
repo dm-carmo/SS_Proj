@@ -126,6 +126,7 @@
             // 
             // ok
             // 
+            this.ok.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.ok.Location = new System.Drawing.Point(32, 342);
             this.ok.Name = "ok";
             this.ok.Size = new System.Drawing.Size(60, 20);
@@ -135,6 +136,7 @@
             // 
             // cancel
             // 
+            this.cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cancel.Location = new System.Drawing.Point(183, 342);
             this.cancel.Name = "cancel";
             this.cancel.Size = new System.Drawing.Size(60, 20);

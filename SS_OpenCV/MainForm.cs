@@ -336,6 +336,38 @@ namespace SS_OpenCV
             Cursor = Cursors.Default; // normal cursor 
         }
 
+        private void nonUniformFiltersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            WeightMatrix wm = new WeightMatrix();
+            if(wm.ShowDialog() == DialogResult.OK)
+            {
+                int[,] mat = {{Convert.ToInt32(wm.topleft.Text),
+                                Convert.ToInt32(wm.top.Text),
+                                Convert.ToInt32(wm.topright.Text) },
+                                { Convert.ToInt32(wm.left.Text),
+                                Convert.ToInt32(wm.middle.Text),
+                                Convert.ToInt32(wm.right.Text) },
+                                    { Convert.ToInt32(wm.bttmleft.Text),
+                                    Convert.ToInt32(wm.bottom.Text),
+                                    Convert.ToInt32(wm.bttmright.Text) }
+                };
+                ImageClass.NonUniformFilter(img, mat, Convert.ToInt32(wm.weight.Text));
+            } else
+            {
+                return;
+            }
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+
+        }
+
         private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (img == null) // verify if the image is already opened

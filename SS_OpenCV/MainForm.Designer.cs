@@ -53,12 +53,13 @@
             this.rotationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filtersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.meanNoiseReductionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.x3ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoZoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ImageViewer = new System.Windows.Forms.PictureBox();
-            this.meanNoiseReductionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.x3ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nonUniformFiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ImageViewer)).BeginInit();
@@ -130,7 +131,7 @@
             // undoToolStripMenuItem
             // 
             this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
-            this.undoToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.undoToolStripMenuItem.Text = "Undo";
             this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
             // 
@@ -228,31 +229,47 @@
             // translationToolStripMenuItem
             // 
             this.translationToolStripMenuItem.Name = "translationToolStripMenuItem";
-            this.translationToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.translationToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.translationToolStripMenuItem.Text = "Translation";
             this.translationToolStripMenuItem.Click += new System.EventHandler(this.translationToolStripMenuItem_Click);
             // 
             // rotationToolStripMenuItem
             // 
             this.rotationToolStripMenuItem.Name = "rotationToolStripMenuItem";
-            this.rotationToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.rotationToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.rotationToolStripMenuItem.Text = "Rotation";
             this.rotationToolStripMenuItem.Click += new System.EventHandler(this.rotationToolStripMenuItem_Click);
             // 
             // zoomToolStripMenuItem
             // 
             this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.zoomToolStripMenuItem.Text = "Zoom";
             this.zoomToolStripMenuItem.Click += new System.EventHandler(this.zoomToolStripMenuItem_Click);
             // 
             // filtersToolStripMenuItem
             // 
             this.filtersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.meanNoiseReductionToolStripMenuItem});
+            this.meanNoiseReductionToolStripMenuItem,
+            this.nonUniformFiltersToolStripMenuItem});
             this.filtersToolStripMenuItem.Name = "filtersToolStripMenuItem";
             this.filtersToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.filtersToolStripMenuItem.Text = "Filters";
+            // 
+            // meanNoiseReductionToolStripMenuItem
+            // 
+            this.meanNoiseReductionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.x3ToolStripMenuItem});
+            this.meanNoiseReductionToolStripMenuItem.Name = "meanNoiseReductionToolStripMenuItem";
+            this.meanNoiseReductionToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.meanNoiseReductionToolStripMenuItem.Text = "Mean Noise Reduction";
+            // 
+            // x3ToolStripMenuItem
+            // 
+            this.x3ToolStripMenuItem.Name = "x3ToolStripMenuItem";
+            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(91, 22);
+            this.x3ToolStripMenuItem.Text = "3x3";
+            this.x3ToolStripMenuItem.Click += new System.EventHandler(this.x3ToolStripMenuItem_Click);
             // 
             // autoZoomToolStripMenuItem
             // 
@@ -289,20 +306,12 @@
             this.ImageViewer.TabStop = false;
             this.ImageViewer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ImageViewer_MouseClick);
             // 
-            // meanNoiseReductionToolStripMenuItem
+            // nonUniformFiltersToolStripMenuItem
             // 
-            this.meanNoiseReductionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.x3ToolStripMenuItem});
-            this.meanNoiseReductionToolStripMenuItem.Name = "meanNoiseReductionToolStripMenuItem";
-            this.meanNoiseReductionToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
-            this.meanNoiseReductionToolStripMenuItem.Text = "Mean Noise Reduction";
-            // 
-            // x3ToolStripMenuItem
-            // 
-            this.x3ToolStripMenuItem.Name = "x3ToolStripMenuItem";
-            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.x3ToolStripMenuItem.Text = "3x3";
-            this.x3ToolStripMenuItem.Click += new System.EventHandler(this.x3ToolStripMenuItem_Click);
+            this.nonUniformFiltersToolStripMenuItem.Name = "nonUniformFiltersToolStripMenuItem";
+            this.nonUniformFiltersToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.nonUniformFiltersToolStripMenuItem.Text = "Non Uniform Filters";
+            this.nonUniformFiltersToolStripMenuItem.Click += new System.EventHandler(this.nonUniformFiltersToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -357,6 +366,7 @@
         private System.Windows.Forms.ToolStripMenuItem brightnessContrastToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem meanNoiseReductionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem x3ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem nonUniformFiltersToolStripMenuItem;
     }
 }
 
