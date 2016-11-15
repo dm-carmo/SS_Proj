@@ -416,6 +416,155 @@ namespace SS_OpenCV
             }
         }
 
+        internal static void MedianFilter(Image<Bgr, byte> img)
+        {
+            unsafe
+            {
+                MIplImage m = img.MIplImage;
+                MIplImage copy = img.Copy().MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+                byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+
+                int widthstep = m.widthStep;
+                int nC = m.nChannels;
+                int width = img.Width;
+                int height = img.Height;
+
+                int x, y;
+
+                for(y = 1; y < height - 1; y ++)
+                {
+                    for(x = 1; x < width - 1; x++)
+                    {
+                        byte* pixelPtr = dataPtr + y * widthstep + x * nC;
+                        byte* pixelPtrCopy = dataPtrCopy + (y - 1) * widthstep + (x - 1) * nC;
+                        CalculateMedian(m, pixelPtr, pixelPtrCopy);
+                    }
+                }
+            }
+        }
+
+       unsafe internal static void CalculateMedian(MIplImage m, byte* origPtr, byte* copyPtr)
+        {
+            int[,] distMat = new int[9, 9];
+
+            for (int y = 0; y < 3; y++)
+            {
+                for(int x = 0; x < 3; x++)
+                {
+                    //**TODO:** percorre a matriz, fazer divisão por 3 e resto da divisão por 3
+                }
+            }
+        }
+
+        internal static void DifferentialFilter(Image<Bgr, byte> img)
+        {
+            unsafe
+            {
+                MIplImage m = img.MIplImage;
+                MIplImage copy = img.Copy().MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+                byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+
+                int widthstep = m.widthStep;
+                int nC = m.nChannels;
+                int width = img.Width;
+                int height = img.Height;
+
+                for (int y = 0; y < height - 1; y++)
+                {
+                    for (int x = 0; x < width - 1; x++)
+                    {
+                        byte* dest = dataPtr + y * widthstep + x * nC;
+                        byte* currPt = dataPtrCopy + y * widthstep + x * nC;
+                        int[] sum = { 0, 0, 0 };
+                        byte* rightPt = dataPtrCopy + y * widthstep + (x + 1) * nC;
+                        byte* downPt = dataPtrCopy + (y + 1) * widthstep + x * nC;
+                        sum[0] = Math.Abs(currPt[0] - rightPt[0]) + Math.Abs(currPt[0] - downPt[0]);
+                        sum[1] = Math.Abs(currPt[1] - rightPt[1]) + Math.Abs(currPt[1] - downPt[1]);
+                        sum[2] = Math.Abs(currPt[2] - rightPt[2]) + Math.Abs(currPt[2] - downPt[2]);
+                        dest[0] = (byte)(sum[0] > 255 ? 255 : sum[0]);
+                        dest[1] = (byte)(sum[1] > 255 ? 255 : sum[1]);
+                        dest[2] = (byte)(sum[2] > 255 ? 255 : sum[2]);
+                    }
+                }
+
+                for(int y = 0; y < height - 1; y++)
+                {
+                    byte* dest = dataPtr + y * widthstep + (width - 1) * nC;
+                    byte* currPt = dataPtrCopy + y * widthstep + (width - 1) * nC;
+                    int[] sum = { 0, 0, 0 };
+                    byte* downPt = dataPtrCopy + (y + 1) * widthstep + (width - 1) * nC;
+                    sum[0] = Math.Abs(currPt[0] - downPt[0]);
+                    sum[1] = Math.Abs(currPt[1] - downPt[1]);
+                    sum[2] = Math.Abs(currPt[2] - downPt[2]);
+                    dest[0] = (byte)(sum[0] > 255 ? 255 : sum[0]);
+                    dest[1] = (byte)(sum[1] > 255 ? 255 : sum[1]);
+                    dest[2] = (byte)(sum[2] > 255 ? 255 : sum[2]);
+                }
+
+                for (int x = 0; x < width - 1; x++)
+                {
+                    byte* dest = dataPtr + (height - 1) * widthstep + x * nC;
+                    byte* currPt = dataPtrCopy + (height - 1) * widthstep + x * nC;
+                    int[] sum = { 0, 0, 0 };
+                    byte* rightPt = dataPtrCopy + (height - 1) * widthstep + (x + 1) * nC;
+                    sum[0] = Math.Abs(currPt[0] - rightPt[0]);
+                    sum[1] = Math.Abs(currPt[1] - rightPt[1]);
+                    sum[2] = Math.Abs(currPt[2] - rightPt[2]);
+                    dest[0] = (byte)(sum[0] > 255 ? 255 : sum[0]);
+                    dest[1] = (byte)(sum[1] > 255 ? 255 : sum[1]);
+                    dest[2] = (byte)(sum[2] > 255 ? 255 : sum[2]);
+                }
+
+                dataPtr = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
+                dataPtr[0] = 0;
+                dataPtr[1] = 0;
+                dataPtr[2] = 0;
+            }
+        }
+
+        internal static void SumPixels(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
+        {
+            unsafe
+            {
+                MIplImage m1 = img1.MIplImage;
+                MIplImage m2 = img2.MIplImage;
+                byte* dataPtr1 = (byte*)m1.imageData.ToPointer();
+                byte* dataPtr2 = (byte*)m2.imageData.ToPointer();
+
+                int widthstep = m1.widthStep;
+                int nC = m1.nChannels;
+                int width = img1.Width;
+                int height = img1.Height;
+
+                int x, y;
+
+                for (y = 0; y < img1.Height; y++)
+                {
+                    for (x = 0; x < img1.Width; x++)
+                    {
+                        byte* orig = dataPtr1 + y * widthstep + x * nC;
+                        byte* sum = dataPtr2 + y * widthstep + x * nC;
+                        
+                        //obtém as 3 componentes
+                        int blue = (int)(orig[0] + sum[0]);
+                        int green = (int)(orig[1] + sum[1]);
+                        int red = (int)(orig[2] + sum[2]);
+
+                        if (blue > 255) blue = 255;
+                        if (green > 255) green = 255;
+                        if (red > 255) red = 255;
+
+                        // store in the image
+                        dataPtr1[0] = (byte)(blue);
+                        dataPtr1[1] = (byte)(green);
+                        dataPtr1[2] = (byte)(red);
+                    }
+                }
+            }
+        }
+
         internal static void NonUniformFilter(Image<Bgr, byte> img, int[,] mat, int weight)
         {
             unsafe

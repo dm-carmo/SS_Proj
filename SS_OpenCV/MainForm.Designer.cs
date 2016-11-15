@@ -55,11 +55,15 @@
             this.filtersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.meanNoiseReductionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x3ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nonUniformFiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.edgeDetectionFiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sobelFilterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.differentialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.medianFilterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoZoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoresToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ImageViewer = new System.Windows.Forms.PictureBox();
-            this.nonUniformFiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ImageViewer)).BeginInit();
@@ -229,21 +233,21 @@
             // translationToolStripMenuItem
             // 
             this.translationToolStripMenuItem.Name = "translationToolStripMenuItem";
-            this.translationToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.translationToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.translationToolStripMenuItem.Text = "Translation";
             this.translationToolStripMenuItem.Click += new System.EventHandler(this.translationToolStripMenuItem_Click);
             // 
             // rotationToolStripMenuItem
             // 
             this.rotationToolStripMenuItem.Name = "rotationToolStripMenuItem";
-            this.rotationToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.rotationToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.rotationToolStripMenuItem.Text = "Rotation";
             this.rotationToolStripMenuItem.Click += new System.EventHandler(this.rotationToolStripMenuItem_Click);
             // 
             // zoomToolStripMenuItem
             // 
             this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.zoomToolStripMenuItem.Text = "Zoom";
             this.zoomToolStripMenuItem.Click += new System.EventHandler(this.zoomToolStripMenuItem_Click);
             // 
@@ -251,7 +255,9 @@
             // 
             this.filtersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.meanNoiseReductionToolStripMenuItem,
-            this.nonUniformFiltersToolStripMenuItem});
+            this.nonUniformFiltersToolStripMenuItem,
+            this.edgeDetectionFiltersToolStripMenuItem,
+            this.medianFilterToolStripMenuItem});
             this.filtersToolStripMenuItem.Name = "filtersToolStripMenuItem";
             this.filtersToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.filtersToolStripMenuItem.Text = "Filters";
@@ -267,9 +273,46 @@
             // x3ToolStripMenuItem
             // 
             this.x3ToolStripMenuItem.Name = "x3ToolStripMenuItem";
-            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(91, 22);
+            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.x3ToolStripMenuItem.Text = "3x3";
             this.x3ToolStripMenuItem.Click += new System.EventHandler(this.x3ToolStripMenuItem_Click);
+            // 
+            // nonUniformFiltersToolStripMenuItem
+            // 
+            this.nonUniformFiltersToolStripMenuItem.Name = "nonUniformFiltersToolStripMenuItem";
+            this.nonUniformFiltersToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.nonUniformFiltersToolStripMenuItem.Text = "Non Uniform";
+            this.nonUniformFiltersToolStripMenuItem.Click += new System.EventHandler(this.nonUniformFiltersToolStripMenuItem_Click);
+            // 
+            // edgeDetectionFiltersToolStripMenuItem
+            // 
+            this.edgeDetectionFiltersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.sobelFilterToolStripMenuItem,
+            this.differentialToolStripMenuItem});
+            this.edgeDetectionFiltersToolStripMenuItem.Name = "edgeDetectionFiltersToolStripMenuItem";
+            this.edgeDetectionFiltersToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.edgeDetectionFiltersToolStripMenuItem.Text = "Edge Detection";
+            // 
+            // sobelFilterToolStripMenuItem
+            // 
+            this.sobelFilterToolStripMenuItem.Name = "sobelFilterToolStripMenuItem";
+            this.sobelFilterToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sobelFilterToolStripMenuItem.Text = "Sobel";
+            this.sobelFilterToolStripMenuItem.Click += new System.EventHandler(this.sobelFilterToolStripMenuItem_Click);
+            // 
+            // differentialToolStripMenuItem
+            // 
+            this.differentialToolStripMenuItem.Name = "differentialToolStripMenuItem";
+            this.differentialToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.differentialToolStripMenuItem.Text = "Differential";
+            this.differentialToolStripMenuItem.Click += new System.EventHandler(this.differentialToolStripMenuItem_Click);
+            // 
+            // medianFilterToolStripMenuItem
+            // 
+            this.medianFilterToolStripMenuItem.Name = "medianFilterToolStripMenuItem";
+            this.medianFilterToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.medianFilterToolStripMenuItem.Text = "Median";
+            this.medianFilterToolStripMenuItem.Click += new System.EventHandler(this.medianFilterToolStripMenuItem_Click);
             // 
             // autoZoomToolStripMenuItem
             // 
@@ -305,13 +348,6 @@
             this.ImageViewer.TabIndex = 6;
             this.ImageViewer.TabStop = false;
             this.ImageViewer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ImageViewer_MouseClick);
-            // 
-            // nonUniformFiltersToolStripMenuItem
-            // 
-            this.nonUniformFiltersToolStripMenuItem.Name = "nonUniformFiltersToolStripMenuItem";
-            this.nonUniformFiltersToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
-            this.nonUniformFiltersToolStripMenuItem.Text = "Non Uniform Filters";
-            this.nonUniformFiltersToolStripMenuItem.Click += new System.EventHandler(this.nonUniformFiltersToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -367,6 +403,10 @@
         private System.Windows.Forms.ToolStripMenuItem meanNoiseReductionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem x3ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nonUniformFiltersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem edgeDetectionFiltersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sobelFilterToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem differentialToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem medianFilterToolStripMenuItem;
     }
 }
 

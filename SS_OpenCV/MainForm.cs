@@ -368,6 +368,67 @@ namespace SS_OpenCV
 
         }
 
+        private void sobelFilterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            Image<Bgr, Byte> img2 = img.Copy();
+
+            int[,] mat1 = { { 1, 0, -1 }, { 2, 0, -2 }, { 1, 0, -1 } };
+
+            int[,] mat2 = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+
+            ImageClass.NonUniformFilter(img, mat1, 1);
+
+            ImageClass.NonUniformFilter(img2, mat2, 1);
+
+            ImageClass.SumPixels(img, img2);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void differentialToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+            
+            ImageClass.DifferentialFilter(img);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void medianFilterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            ImageClass.MedianFilter(img);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
         private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (img == null) // verify if the image is already opened
