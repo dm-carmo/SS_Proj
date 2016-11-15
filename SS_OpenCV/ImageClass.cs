@@ -416,6 +416,118 @@ namespace SS_OpenCV
             }
         }
 
+        internal static void OtsuBinarize(Image<Bgr, byte> img)
+        {
+            //variancia conjunta = q1*q2*(u1-u2)^2
+            //q1 = sum(i = 0, t, P(i))
+            //q2 = sum(i = t + 1, 255, P(i))
+            //u1 = sum(i = 0, t, i * P(i))/q1
+            //u2 = sum(i = t + 1, 255, i * P(i))/q2
+            int[] intensity = ImageClass.CalculateHistogram(img)[0];
+            MIplImage m = img.MIplImage;
+            int npixels = m.height * m.width;
+            double[] probs = new double[256];
+            double[] vars = new double[254];
+            for (int i = 0; i < 256; i++)
+            {
+                double d = (double)intensity[i] / npixels;
+                probs[i] = d;
+            }
+            for (int i = 0; i < probs.Length; i++)
+                System.Diagnostics.Debug.Write(probs[i] + " ");
+            for (int t = 1; t < 255; t++)
+            {
+                double q1 = 0.0, q2 = 0.0, u1 = 0.0, u2 = 0.0;
+                int i;
+                for(i = 0; i < t; i ++)
+                {
+                    q1 += probs[i];
+                    u1 += probs[i] * i;
+                }
+                for(; i < 256; i++)
+                {
+                    q2 += probs[i];
+                    u2 += probs[i] * i;
+                }
+                u1 /= q1;
+                u2 /= q2;
+                vars[t - 1] = q1 * q2 * Math.Pow((u1 - u2), 2);
+            }
+            int threshold = Array.IndexOf(vars, vars.Min()) + 1;
+            ImageClass.ManualBinarize(img, threshold);
+        }
+
+        internal static void ManualBinarize(Image<Bgr, byte> img, int threshold)
+        {
+            unsafe
+            {
+                MIplImage m = img.MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+
+                int widthstep = m.widthStep;
+                int nC = m.nChannels;
+                int width = img.Width;
+                int height = img.Height;
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte* dest = dataPtr + y * widthstep + x * nC;
+                        int[] bgr = new int[] { dest[0], dest[1], dest[2] };
+
+                        if (bgr.Max() >= threshold)
+                        {
+                            dest[0] = 255;
+                            dest[1] = 255;
+                            dest[2] = 255;
+                        }
+
+                        else
+                        {
+                            dest[0] = 0;
+                            dest[1] = 0;
+                            dest[2] = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        internal static int[][] CalculateHistogram(Image<Bgr, byte> img)
+        {
+            unsafe
+            {
+                int[] intensity = new int[256];
+                int[] blue = new int[256];
+                int[] green = new int[256];
+                int[] red = new int[256];
+                MIplImage m = img.MIplImage;
+                byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+
+                int widthstep = m.widthStep;
+                int nC = m.nChannels;
+                int width = img.Width;
+                int height = img.Height;
+
+                int x, y;
+
+                for (y = 0; y < height; y++)
+                {
+                    for (x = 0; x < width; x++)
+                    {
+                        byte* pixelPtr = dataPtr + y * widthstep + x * nC;
+                        int[] bgr = new int[] { pixelPtr[0], pixelPtr[1], pixelPtr[2] };
+                        blue[bgr[0]]++;
+                        green[bgr[1]]++;
+                        red[bgr[2]]++;
+                    }
+                }
+
+                return new int[][] { intensity, blue, green, red };
+            }
+        }
+
         internal static void MedianFilter(Image<Bgr, byte> img)
         {
             unsafe
@@ -432,9 +544,9 @@ namespace SS_OpenCV
 
                 int x, y;
 
-                for(y = 1; y < height - 1; y ++)
+                for (y = 1; y < height - 1; y++)
                 {
-                    for(x = 1; x < width - 1; x++)
+                    for (x = 1; x < width - 1; x++)
                     {
                         byte* pixelPtr = dataPtr + y * widthstep + x * nC;
                         byte* pixelPtrCopy = dataPtrCopy + (y - 1) * widthstep + (x - 1) * nC;
@@ -445,13 +557,13 @@ namespace SS_OpenCV
             }
         }
 
-       unsafe internal static void CalculateMedian(MIplImage m, byte* origPtr, byte* copyPtr)
+        unsafe internal static void CalculateMedian(MIplImage m, byte* origPtr, byte* copyPtr)
         {
             int[,] distMat = new int[9, 9];
 
             for (int y = 0; y < 3; y++)
             {
-                for(int x = 0; x < 3; x++)
+                for (int x = 0; x < 3; x++)
                 {
                     byte* startPtr = origPtr + y * m.widthStep + x * m.nChannels;
                     //**TODO:** percorre a matriz, fazer divisão por 3 e resto da divisão por 3
@@ -459,19 +571,19 @@ namespace SS_OpenCV
                     {
                         int idx = x * 3 + y;
                         if (distMat[idx, i] != 0) continue;
-                        if(idx == i)
+                        if (idx == i)
                         {
                             distMat[idx, i] = 0;
                             continue;
                         }
-                        byte* distPtr = origPtr + (i/3) * m.widthStep + (i%3) * m.nChannels;
-                        int dist = Math.Abs(startPtr[0]-distPtr[0]) + Math.Abs(startPtr[1] - distPtr[1]) + Math.Abs(startPtr[2] - distPtr[2]);
+                        byte* distPtr = origPtr + (i / 3) * m.widthStep + (i % 3) * m.nChannels;
+                        int dist = Math.Abs(startPtr[0] - distPtr[0]) + Math.Abs(startPtr[1] - distPtr[1]) + Math.Abs(startPtr[2] - distPtr[2]);
                         distMat[idx, i] = distMat[i, idx] = dist;
                     }
                 }
             }
             int[] distSum = new int[9];
-            for(int i = 0; i < 9; i++) for(int j = 0; j < 9; j++)  distSum[i] += distMat[i, j];
+            for (int i = 0; i < 9; i++) for (int j = 0; j < 9; j++) distSum[i] += distMat[i, j];
             int newIdx = Array.IndexOf(distSum, distSum.Min());
             byte* newPtr = origPtr + (newIdx / 3) * m.widthStep + (newIdx % 3) * m.nChannels;
             copyPtr[0] = newPtr[0];
@@ -511,7 +623,7 @@ namespace SS_OpenCV
                     }
                 }
 
-                for(int y = 0; y < height - 1; y++)
+                for (int y = 0; y < height - 1; y++)
                 {
                     byte* dest = dataPtr + y * widthstep + (width - 1) * nC;
                     byte* currPt = dataPtrCopy + y * widthstep + (width - 1) * nC;
@@ -568,7 +680,7 @@ namespace SS_OpenCV
                     {
                         byte* orig = dataPtr1 + y * widthstep + x * nC;
                         byte* sum = dataPtr2 + y * widthstep + x * nC;
-                        
+
                         //obtém as 3 componentes
                         int blue = (int)(orig[0] + sum[0]);
                         int green = (int)(orig[1] + sum[1]);
