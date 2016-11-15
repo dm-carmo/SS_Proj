@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Emgu.CV.Structure;
 using Emgu.CV;
@@ -438,9 +438,10 @@ namespace SS_OpenCV
                     {
                         byte* pixelPtr = dataPtr + y * widthstep + x * nC;
                         byte* pixelPtrCopy = dataPtrCopy + (y - 1) * widthstep + (x - 1) * nC;
-                        CalculateMedian(m, pixelPtr, pixelPtrCopy);
+                        CalculateMedian(m, pixelPtrCopy, pixelPtr);
                     }
                 }
+                //processar cantos e margens
             }
         }
 
@@ -452,9 +453,30 @@ namespace SS_OpenCV
             {
                 for(int x = 0; x < 3; x++)
                 {
+                    byte* startPtr = origPtr + y * m.widthStep + x * m.nChannels;
                     //**TODO:** percorre a matriz, fazer divisão por 3 e resto da divisão por 3
+                    for (int i = 0; i < 9; i++)
+                    {
+                        int idx = x * 3 + y;
+                        if (distMat[idx, i] != 0) continue;
+                        if(idx == i)
+                        {
+                            distMat[idx, i] = 0;
+                            continue;
+                        }
+                        byte* distPtr = origPtr + (i/3) * m.widthStep + (i%3) * m.nChannels;
+                        int dist = Math.Abs(startPtr[0]-distPtr[0]) + Math.Abs(startPtr[1] - distPtr[1]) + Math.Abs(startPtr[2] - distPtr[2]);
+                        distMat[idx, i] = distMat[i, idx] = dist;
+                    }
                 }
             }
+            int[] distSum = new int[9];
+            for(int i = 0; i < 9; i++) for(int j = 0; j < 9; j++)  distSum[i] += distMat[i, j];
+            int newIdx = Array.IndexOf(distSum, distSum.Min());
+            byte* newPtr = origPtr + (newIdx / 3) * m.widthStep + (newIdx % 3) * m.nChannels;
+            copyPtr[0] = newPtr[0];
+            copyPtr[1] = newPtr[1];
+            copyPtr[2] = newPtr[2];
         }
 
         internal static void DifferentialFilter(Image<Bgr, byte> img)
