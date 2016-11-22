@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using Emgu.CV;
-using Emgu.CV.UI;
 using Emgu.CV.Structure;
 
 namespace SS_OpenCV
@@ -157,11 +152,6 @@ namespace SS_OpenCV
             ImageViewer.Refresh(); // refresh image on the screen
 
             Cursor = Cursors.Default; // normal cursor 
-        }
-
-        private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
-        {
-
         }
 
         private void grayRedToolStripMenuItem_Click(object sender, EventArgs e)
