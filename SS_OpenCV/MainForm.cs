@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using Emgu.CV;
-using Emgu.CV.UI;
 using Emgu.CV.Structure;
 
 namespace SS_OpenCV
@@ -157,11 +152,6 @@ namespace SS_OpenCV
             ImageViewer.Refresh(); // refresh image on the screen
 
             Cursor = Cursors.Default; // normal cursor 
-        }
-
-        private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
-        {
-
         }
 
         private void grayRedToolStripMenuItem_Click(object sender, EventArgs e)
@@ -422,6 +412,57 @@ namespace SS_OpenCV
             imgUndo = img.Copy();
 
             ImageClass.MedianFilter(img);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void showHistogramToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+
+            int[][] hists = ImageClass.CalculateHistogram(img);
+
+            new HistogramForm(hists[0], hists[1], hists[2], hists[3]).ShowDialog();
+
+        }
+
+        private void manualToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            InputBox thres = new InputBox("threshold?");
+
+            thres.ShowDialog();
+
+            int threshold = Convert.ToInt32(thres.ValueTextBox.Text);
+
+            ImageClass.ManualBinarize(img, threshold);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void otsuToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            ImageClass.OtsuBinarize(img);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
