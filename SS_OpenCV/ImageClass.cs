@@ -12,7 +12,7 @@ namespace SS_OpenCV
         /// Inverts an image's colours
         /// </summary>
         /// <param name="img">The mage</param>
-        unsafe internal static void Negative(Image<Bgr, byte> img)
+        unsafe public static void Negative(Image<Bgr, byte> img)
         {
             // direct access to the image memory(sequencial)
             // direcion top left -> bottom right
@@ -58,7 +58,7 @@ namespace SS_OpenCV
         /// <param name="img">The picture to modify</param>
         /// <param name="brilho">The amount of brightness to add/remove</param>
         /// <param name="cont">The contrast multiplier</param>
-        unsafe internal static void BrightCont(Image<Bgr, byte> img, int brilho, float cont)
+        unsafe public static void BrightCont(Image<Bgr, byte> img, int brilho, float cont)
         {
 
             // direct access to the image memory(sequencial)
@@ -107,15 +107,13 @@ namespace SS_OpenCV
             }
         }
 
-
-
         /// <summary>
         /// Converts an image to gray
         /// Direct access to memory
         /// </summary>
         /// <param name="img">The image</param>
         /// <param name="mode">Conversion mode</param>
-        unsafe internal static void ConvertToGray(Image<Bgr, byte> img, char mode)
+        unsafe public static void ConvertToGray(Image<Bgr, byte> img, char mode)
         {
             // direct access to the image memory(sequencial)
             // direcion top left -> bottom right
@@ -169,7 +167,7 @@ namespace SS_OpenCV
         /// <param name="img">The image to move</param>
         /// <param name="dx">Amount of pixels to move in the X axis</param>
         /// <param name="dy">Amount of pixels to move in the Y axis</param>
-        unsafe internal static void Translate(Image<Bgr, byte> img, int dx, int dy)
+        unsafe public static void Translate(Image<Bgr, byte> img, int dx, int dy)
         {
             MIplImage copy = img.Copy().MIplImage;
             MIplImage m = img.MIplImage;
@@ -213,7 +211,7 @@ namespace SS_OpenCV
         /// </summary>
         /// <param name="img">The image to rotate</param>
         /// <param name="ang">The angle of rotation (in degrees)</param>
-        unsafe internal static void Rotate(Image<Bgr, byte> img, int ang)
+        unsafe public static void Rotate(Image<Bgr, byte> img, int ang)
         {
             MIplImage m = img.MIplImage;
             MIplImage copy = img.Copy().MIplImage;
@@ -264,7 +262,7 @@ namespace SS_OpenCV
         /// <param name="factor">Zoom factor</param>
         /// <param name="mouseX">Current X position of the mouse</param>
         /// <param name="mouseY">Current Y position of the mouse</param>
-        unsafe internal static void Zoom(Image<Bgr, byte> img, float factor, int mouseX, int mouseY)
+        unsafe public static void Zoom(Image<Bgr, byte> img, float factor, int mouseX, int mouseY)
         {
             if (factor == 1 || factor < 0) return;
             MIplImage copy = img.Copy().MIplImage;
@@ -308,7 +306,7 @@ namespace SS_OpenCV
         /// Performs the binarization of an image, based on the Otsu method
         /// </summary>
         /// <param name="img">The image to binarize</param>
-        internal static void OtsuBinarize(Image<Bgr, byte> img)
+        public static void OtsuBinarize(Image<Bgr, byte> img)
         {
             //covariance = q1*q2*(u1-u2)^2
             //q1 = sum(i = 0, t, P(i)) -> sum of the probabilities of a pixel being below the chosen threshold
@@ -351,7 +349,7 @@ namespace SS_OpenCV
         /// </summary>
         /// <param name="img">The image to binarize</param>
         /// <param name="threshold">The binarization threshold</param>
-        unsafe internal static void ManualBinarize(Image<Bgr, byte> img, int threshold)
+        unsafe public static void ManualBinarize(Image<Bgr, byte> img, int threshold)
         {
             ConvertToGray(img, 'M'); //for best results we should convert the image to grayscale first
             MIplImage m = img.MIplImage;
@@ -387,7 +385,7 @@ namespace SS_OpenCV
         /// </summary>
         /// <param name="img">The image</param>
         /// <returns>An array with the histogram values (intensitr, blue, red, green)</returns>
-        unsafe internal static int[][] CalculateHistogram(Image<Bgr, byte> img)
+        unsafe public static int[][] CalculateHistogram(Image<Bgr, byte> img)
         {
             int[] intensity = new int[256];
             int[] blue = new int[256];
@@ -425,7 +423,7 @@ namespace SS_OpenCV
         /// Performs a median filter on an image
         /// </summary>
         /// <param name="img">The image</param>
-        unsafe internal static void MedianFilter(Image<Bgr, byte> img)
+        unsafe public static void MedianFilter(Image<Bgr, byte> img)
         {
             MIplImage m = img.MIplImage;
             MIplImage copy = img.Copy().MIplImage;
@@ -477,7 +475,7 @@ namespace SS_OpenCV
         /// <param name="m">Information about an image</param>
         /// <param name="origPtr">Pointer to the top-left pixel in the respective neighbourhood</param>
         /// <param name="copyPtr">Pointer to the pixel where we are calculating the median (we will modify this)</param>
-        unsafe internal static void CalculateMedian(MIplImage m, byte* origPtr, byte* copyPtr)
+        unsafe public static void CalculateMedian(MIplImage m, byte* origPtr, byte* copyPtr)
         {
             int[,] distMat = new int[9, 9]; //a matrix used to store the distance between any 2 pixels
 
@@ -627,7 +625,7 @@ namespace SS_OpenCV
         /// Performs a differential edge detection filter on an image
         /// </summary>
         /// <param name="img">The image</param>
-        unsafe internal static void DifferentialFilter(Image<Bgr, byte> img)
+        unsafe public static void DifferentialFilter(Image<Bgr, byte> img)
         {
             MIplImage m = img.MIplImage;
             MIplImage copy = img.Copy().MIplImage;
@@ -697,14 +695,13 @@ namespace SS_OpenCV
             dataPtr[2] = 0;
         }
 
-
         /// <summary>
         /// Adds the RGB values of pixels between two images.
         /// Assumes they have the same width and height
         /// </summary>
         /// <param name="img1">The first image (we will modify this one)</param>
         /// <param name="img2">The second image</param>
-        unsafe internal static void SumPixels(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
+        unsafe public static void SumPixels(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
         {
             MIplImage m1 = img1.MIplImage;
             MIplImage m2 = img2.MIplImage;
@@ -746,7 +743,7 @@ namespace SS_OpenCV
         /// <param name="img">The image</param>
         /// <param name="mat">The filter's matrix (multipliers)</param>
         /// <param name="weight">The weight of the final sum</param>
-        unsafe internal static void NonUniformFilter(Image<Bgr, byte> img, int[,] mat, int weight)
+        unsafe public static void NonUniformFilter(Image<Bgr, byte> img, int[,] mat, int weight)
         {
             MIplImage m = img.MIplImage;
             MIplImage copy = img.Copy().MIplImage;
@@ -836,7 +833,7 @@ namespace SS_OpenCV
             corner[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
             corner[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
             corner[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
-            
+
             for (int i = 1; i < width - 1; i++)
             {
                 //top margin

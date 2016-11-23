@@ -506,6 +506,11 @@ namespace SS_OpenCV
             e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
+        private void evalFormToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new EvalForm().ShowDialog();
+        }
+
         private void decimalTextBox(object sender, KeyPressEventArgs e)
         {
             // allows 0-9, backspace, and decimal

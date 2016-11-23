@@ -62,18 +62,18 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(206, 160);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(38, 13);
+            this.label3.Size = new System.Drawing.Size(114, 13);
             this.label3.TabIndex = 2;
-            this.label3.Text = "Autor1";
+            this.label3.Text = "David Carmo nº 45234";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(206, 182);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(38, 13);
+            this.label4.Size = new System.Drawing.Size(127, 13);
             this.label4.TabIndex = 2;
-            this.label4.Text = "Autor2";
+            this.label4.Text = "Pedro Guerreiro nº 45277";
             // 
             // pictureBox1
             // 
@@ -91,9 +91,9 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(206, 204);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(38, 13);
+            this.label5.Size = new System.Drawing.Size(122, 13);
             this.label5.TabIndex = 4;
-            this.label5.Text = "Autor3";
+            this.label5.Text = "Daniel Flamino nº 45465";
             // 
             // AuthorsForm
             // 
