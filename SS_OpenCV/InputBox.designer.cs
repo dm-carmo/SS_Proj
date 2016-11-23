@@ -35,29 +35,27 @@
             // 
             // ValueTextBox
             // 
-            this.ValueTextBox.Location = new System.Drawing.Point(134, 37);
-            this.ValueTextBox.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.ValueTextBox.Location = new System.Drawing.Point(67, 19);
+            this.ValueTextBox.MaxLength = 4;
             this.ValueTextBox.Name = "ValueTextBox";
-            this.ValueTextBox.Size = new System.Drawing.Size(196, 31);
+            this.ValueTextBox.Size = new System.Drawing.Size(100, 20);
             this.ValueTextBox.TabIndex = 0;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(48, 42);
-            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label1.Location = new System.Drawing.Point(24, 22);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(73, 25);
+            this.label1.Size = new System.Drawing.Size(37, 13);
             this.label1.TabIndex = 1;
             this.label1.Text = "Value:";
             // 
             // button1
             // 
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.button1.Location = new System.Drawing.Point(132, 121);
-            this.button1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button1.Location = new System.Drawing.Point(66, 63);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(150, 44);
+            this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 2;
             this.button1.Text = "OK";
             this.button1.UseVisualStyleBackColor = true;
@@ -65,16 +63,14 @@
             // InputBox
             // 
             this.AcceptButton = this.button1;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(464, 213);
+            this.ClientSize = new System.Drawing.Size(232, 111);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.ValueTextBox);
-            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.Name = "InputBox";
             this.Text = "Input Box";
-            this.Load += new System.EventHandler(this.InputBox_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

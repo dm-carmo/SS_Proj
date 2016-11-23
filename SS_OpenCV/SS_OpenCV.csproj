@@ -98,6 +98,12 @@
     <Compile Include="AuthorsForm.Designer.cs">
       <DependentUpon>AuthorsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DoubleInputBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DoubleInputBox.Designer.cs">
+      <DependentUpon>DoubleInputBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="HistogramForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -128,6 +134,9 @@
     <EmbeddedResource Include="AuthorsForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>AuthorsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DoubleInputBox.resx">
+      <DependentUpon>DoubleInputBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HistogramForm.resx">
       <DependentUpon>HistogramForm.cs</DependentUpon>

@@ -68,7 +68,7 @@ namespace SS_OpenCV
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (imgUndo == null) // verify if the image is already opened
-                return; 
+                return;
             Cursor = Cursors.WaitCursor;
             img = imgUndo.Copy();
 
@@ -210,36 +210,34 @@ namespace SS_OpenCV
 
         private void brightnessContrastToolStripMenuItem_Click(object sender, EventArgs e)
         {
- 
+
             if (img == null) // verify if the image is already opened
                 return;
-            Cursor = Cursors.WaitCursor; // clock cursor 
 
             //copy Undo Image
             imgUndo = img.Copy();
 
             int brilho;
-            do
-            {
-                InputBox form1 = new InputBox("brilho?");
-                form1.ShowDialog();
-                string text = form1.ValueTextBox.Text;
-
-                brilho = Convert.ToInt32(text);
-            } while (Math.Abs(brilho) > 255);
-
             float cont;
+            DoubleInputBox dib = new DoubleInputBox("Brightness:", "Contrast:", "Brightness/Contrast", numberTextBox, decimalTextBox);
+            dib.ShowDialog();
+
             do
             {
-                InputBox form2 = new InputBox("contraste?");
-                form2.ShowDialog();
-                cont = Convert.ToSingle(form2.ValueTextBox.Text);
-            } while (cont < 0 || cont > 3);
+                if (dib.DialogResult == DialogResult.Cancel) return;
+                brilho = Convert.ToInt32(dib.textBox1.Text);
+                cont = Convert.ToSingle(dib.textBox2.Text);
+            } while (Math.Abs(brilho) > 255 && (cont < 0 || cont > 3));
 
-            ImageClass.BrightCont(img, brilho, cont);
+            Cursor = Cursors.WaitCursor; // clock cursor 
 
-            ImageViewer.Image = img.Bitmap;
-            ImageViewer.Refresh(); // refresh image on the screen
+            if (dib.DialogResult == DialogResult.OK)
+            {
+                ImageClass.BrightCont(img, brilho, cont);
+
+                ImageViewer.Image = img.Bitmap;
+                ImageViewer.Refresh(); // refresh image on the screen
+            }
 
             Cursor = Cursors.Default; // normal cursor 
         }
@@ -253,21 +251,20 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            InputBox ix, iy;
-            ix = new InputBox("deslocamento em x?");
-            iy = new InputBox("deslocamento em y?");
-
-            ix.ShowDialog();
-            iy.ShowDialog();
+            DoubleInputBox dib = new DoubleInputBox("X Translation:", "Y Translation:", "Translation", numberTextBox, numberTextBox);
+            dib.ShowDialog();
 
             int dx, dy;
-            dx = Convert.ToInt32(ix.ValueTextBox.Text);
-            dy = Convert.ToInt32(iy.ValueTextBox.Text);
+            dx = Convert.ToInt32(dib.textBox1.Text);
+            dy = Convert.ToInt32(dib.textBox2.Text);
 
-            ImageClass.Translate(img, dx, dy);
+            if (dib.DialogResult == DialogResult.OK)
+            {
+                ImageClass.Translate(img, dx, dy);
 
-            ImageViewer.Image = img.Bitmap;
-            ImageViewer.Refresh(); // refresh image on the screen
+                ImageViewer.Image = img.Bitmap;
+                ImageViewer.Refresh(); // refresh image on the screen
+            }
 
             Cursor = Cursors.Default; // normal cursor 
         }
@@ -281,16 +278,19 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            InputBox rot = new InputBox("ângulo?");
+            InputBox rot = new InputBox("Rotation Angle", numberTextBox);
 
             rot.ShowDialog();
+            if (rot.DialogResult == DialogResult.OK)
+            {
 
-            int ang = Convert.ToInt32(rot.ValueTextBox.Text);
+                int ang = Convert.ToInt32(rot.ValueTextBox.Text);
 
-            ImageClass.Rotate(img, ang);
+                ImageClass.Rotate(img, ang);
 
-            ImageViewer.Image = img.Bitmap;
-            ImageViewer.Refresh(); // refresh image on the screen
+                ImageViewer.Image = img.Bitmap;
+                ImageViewer.Refresh(); // refresh image on the screen
+            }
 
             Cursor = Cursors.Default; // normal cursor 
         }
@@ -300,7 +300,7 @@ namespace SS_OpenCV
 
         private void ImageViewer_MouseClick(object sender, MouseEventArgs e)
         {
-            if(mouseFlag)
+            if (mouseFlag)
             {
                 mouseX = e.X;
                 mouseY = e.Y;
@@ -318,7 +318,9 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            ImageClass.MeanReduct3(img);
+            int[,] mat = { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
+
+            ImageClass.NonUniformFilter(img, mat, 9);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -335,7 +337,7 @@ namespace SS_OpenCV
             imgUndo = img.Copy();
 
             WeightMatrix wm = new WeightMatrix();
-            if(wm.ShowDialog() == DialogResult.OK)
+            if (wm.ShowDialog() == DialogResult.OK)
             {
                 int[,] mat = {{Convert.ToInt32(wm.topleft.Text),
                                 Convert.ToInt32(wm.top.Text),
@@ -348,7 +350,8 @@ namespace SS_OpenCV
                                     Convert.ToInt32(wm.bttmright.Text) }
                 };
                 ImageClass.NonUniformFilter(img, mat, Convert.ToInt32(wm.weight.Text));
-            } else
+            }
+            else
             {
                 return;
             }
@@ -393,7 +396,7 @@ namespace SS_OpenCV
 
             //copy Undo Image
             imgUndo = img.Copy();
-            
+
             ImageClass.DifferentialFilter(img);
 
             ImageViewer.Image = img.Bitmap;
@@ -439,7 +442,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            InputBox thres = new InputBox("threshold?");
+            InputBox thres = new InputBox("Threshold", numberTextBox);
 
             thres.ShowDialog();
 
@@ -479,7 +482,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            InputBox zoom = new InputBox("zoom?");
+            InputBox zoom = new InputBox("Zoom Level", decimalTextBox);
 
             mouseFlag = true;
             while (mouseFlag) Application.DoEvents();
@@ -496,6 +499,28 @@ namespace SS_OpenCV
             ImageViewer.Refresh(); // refresh image on the screen
 
             Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void numberTextBox(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
+        }
+
+        private void decimalTextBox(object sender, KeyPressEventArgs e)
+        {
+            // allows 0-9, backspace, and decimal
+            if (((e.KeyChar < 48 || e.KeyChar > 57) && e.KeyChar != 8 && e.KeyChar != 44))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // checks to make sure only 1 decimal is allowed
+            if (e.KeyChar == 44)
+            {
+                if ((sender as TextBox).Text.IndexOf(e.KeyChar) != -1)
+                    e.Handled = true;
+            }
         }
     }
 }

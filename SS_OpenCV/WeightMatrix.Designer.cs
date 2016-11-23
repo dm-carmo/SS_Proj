@@ -28,93 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.weight = new System.Windows.Forms.TextBox();
-            this.bttmright = new System.Windows.Forms.TextBox();
-            this.bottom = new System.Windows.Forms.TextBox();
-            this.bttmleft = new System.Windows.Forms.TextBox();
-            this.left = new System.Windows.Forms.TextBox();
-            this.middle = new System.Windows.Forms.TextBox();
-            this.right = new System.Windows.Forms.TextBox();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.topleft = new System.Windows.Forms.TextBox();
             this.top = new System.Windows.Forms.TextBox();
             this.topright = new System.Windows.Forms.TextBox();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.left = new System.Windows.Forms.TextBox();
+            this.middle = new System.Windows.Forms.TextBox();
+            this.right = new System.Windows.Forms.TextBox();
+            this.bttmleft = new System.Windows.Forms.TextBox();
+            this.bottom = new System.Windows.Forms.TextBox();
+            this.bttmright = new System.Windows.Forms.TextBox();
+            this.weight = new System.Windows.Forms.TextBox();
             this.ok = new System.Windows.Forms.Button();
             this.cancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
-            // 
-            // weight
-            // 
-            this.weight.Location = new System.Drawing.Point(130, 246);
-            this.weight.Name = "weight";
-            this.weight.Size = new System.Drawing.Size(60, 20);
-            this.weight.TabIndex = 0;
-            // 
-            // bttmright
-            // 
-            this.bttmright.Location = new System.Drawing.Point(157, 179);
-            this.bttmright.Name = "bttmright";
-            this.bttmright.Size = new System.Drawing.Size(30, 20);
-            this.bttmright.TabIndex = 1;
-            // 
-            // bottom
-            // 
-            this.bottom.Location = new System.Drawing.Point(121, 179);
-            this.bottom.Name = "bottom";
-            this.bottom.Size = new System.Drawing.Size(30, 20);
-            this.bottom.TabIndex = 2;
-            // 
-            // bttmleft
-            // 
-            this.bttmleft.Location = new System.Drawing.Point(85, 179);
-            this.bttmleft.Name = "bttmleft";
-            this.bttmleft.Size = new System.Drawing.Size(30, 20);
-            this.bttmleft.TabIndex = 3;
-            // 
-            // left
-            // 
-            this.left.Location = new System.Drawing.Point(85, 153);
-            this.left.Name = "left";
-            this.left.Size = new System.Drawing.Size(30, 20);
-            this.left.TabIndex = 4;
-            // 
-            // middle
-            // 
-            this.middle.Location = new System.Drawing.Point(121, 153);
-            this.middle.Name = "middle";
-            this.middle.Size = new System.Drawing.Size(30, 20);
-            this.middle.TabIndex = 5;
-            // 
-            // right
-            // 
-            this.right.Location = new System.Drawing.Point(157, 153);
-            this.right.Name = "right";
-            this.right.Size = new System.Drawing.Size(30, 20);
-            this.right.TabIndex = 6;
-            // 
-            // topleft
-            // 
-            this.topleft.Location = new System.Drawing.Point(85, 127);
-            this.topleft.Name = "topleft";
-            this.topleft.Size = new System.Drawing.Size(30, 20);
-            this.topleft.TabIndex = 7;
-            // 
-            // top
-            // 
-            this.top.Location = new System.Drawing.Point(121, 127);
-            this.top.Name = "top";
-            this.top.Size = new System.Drawing.Size(30, 20);
-            this.top.TabIndex = 8;
-            // 
-            // topright
-            // 
-            this.topright.Location = new System.Drawing.Point(157, 127);
-            this.topright.Name = "topright";
-            this.topright.Size = new System.Drawing.Size(30, 20);
-            this.topright.TabIndex = 9;
             // 
             // comboBox1
             // 
@@ -127,8 +57,88 @@
             this.comboBox1.Location = new System.Drawing.Point(23, 47);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(231, 21);
-            this.comboBox1.TabIndex = 10;
+            this.comboBox1.TabIndex = 0;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
+            // topleft
+            // 
+            this.topleft.Location = new System.Drawing.Point(85, 127);
+            this.topleft.MaxLength = 3;
+            this.topleft.Name = "topleft";
+            this.topleft.Size = new System.Drawing.Size(30, 20);
+            this.topleft.TabIndex = 1;
+            // 
+            // top
+            // 
+            this.top.Location = new System.Drawing.Point(121, 127);
+            this.top.MaxLength = 3;
+            this.top.Name = "top";
+            this.top.Size = new System.Drawing.Size(30, 20);
+            this.top.TabIndex = 2;
+            // 
+            // topright
+            // 
+            this.topright.Location = new System.Drawing.Point(157, 127);
+            this.topright.MaxLength = 3;
+            this.topright.Name = "topright";
+            this.topright.Size = new System.Drawing.Size(30, 20);
+            this.topright.TabIndex = 3;
+            // 
+            // left
+            // 
+            this.left.Location = new System.Drawing.Point(85, 153);
+            this.left.MaxLength = 3;
+            this.left.Name = "left";
+            this.left.Size = new System.Drawing.Size(30, 20);
+            this.left.TabIndex = 4;
+            // 
+            // middle
+            // 
+            this.middle.Location = new System.Drawing.Point(121, 153);
+            this.middle.MaxLength = 3;
+            this.middle.Name = "middle";
+            this.middle.Size = new System.Drawing.Size(30, 20);
+            this.middle.TabIndex = 5;
+            // 
+            // right
+            // 
+            this.right.Location = new System.Drawing.Point(157, 153);
+            this.right.MaxLength = 3;
+            this.right.Name = "right";
+            this.right.Size = new System.Drawing.Size(30, 20);
+            this.right.TabIndex = 6;
+            // 
+            // bttmleft
+            // 
+            this.bttmleft.Location = new System.Drawing.Point(85, 179);
+            this.bttmleft.MaxLength = 3;
+            this.bttmleft.Name = "bttmleft";
+            this.bttmleft.Size = new System.Drawing.Size(30, 20);
+            this.bttmleft.TabIndex = 7;
+            // 
+            // bottom
+            // 
+            this.bottom.Location = new System.Drawing.Point(121, 179);
+            this.bottom.MaxLength = 3;
+            this.bottom.Name = "bottom";
+            this.bottom.Size = new System.Drawing.Size(30, 20);
+            this.bottom.TabIndex = 8;
+            // 
+            // bttmright
+            // 
+            this.bttmright.Location = new System.Drawing.Point(157, 179);
+            this.bttmright.MaxLength = 3;
+            this.bttmright.Name = "bttmright";
+            this.bttmright.Size = new System.Drawing.Size(30, 20);
+            this.bttmright.TabIndex = 9;
+            // 
+            // weight
+            // 
+            this.weight.Location = new System.Drawing.Point(130, 246);
+            this.weight.MaxLength = 3;
+            this.weight.Name = "weight";
+            this.weight.Size = new System.Drawing.Size(60, 20);
+            this.weight.TabIndex = 10;
             // 
             // ok
             // 
@@ -187,19 +197,19 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cancel);
             this.Controls.Add(this.ok);
-            this.Controls.Add(this.comboBox1);
-            this.Controls.Add(this.topright);
-            this.Controls.Add(this.top);
-            this.Controls.Add(this.topleft);
+            this.Controls.Add(this.weight);
+            this.Controls.Add(this.bttmright);
+            this.Controls.Add(this.bottom);
+            this.Controls.Add(this.bttmleft);
             this.Controls.Add(this.right);
             this.Controls.Add(this.middle);
             this.Controls.Add(this.left);
-            this.Controls.Add(this.bttmleft);
-            this.Controls.Add(this.bottom);
-            this.Controls.Add(this.bttmright);
-            this.Controls.Add(this.weight);
+            this.Controls.Add(this.topright);
+            this.Controls.Add(this.top);
+            this.Controls.Add(this.topleft);
+            this.Controls.Add(this.comboBox1);
             this.Name = "WeightMatrix";
-            this.Text = "WeightMatrix";
+            this.Text = "Weight Matrix";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -207,17 +217,17 @@
 
         #endregion
 
-        public System.Windows.Forms.TextBox weight;
-        public System.Windows.Forms.TextBox bttmright;
-        public System.Windows.Forms.TextBox bottom;
-        public System.Windows.Forms.TextBox bttmleft;
-        public System.Windows.Forms.TextBox left;
-        public System.Windows.Forms.TextBox middle;
-        public System.Windows.Forms.TextBox right;
+        private System.Windows.Forms.ComboBox comboBox1;
         public System.Windows.Forms.TextBox topleft;
         public System.Windows.Forms.TextBox top;
         public System.Windows.Forms.TextBox topright;
-        private System.Windows.Forms.ComboBox comboBox1;
+        public System.Windows.Forms.TextBox left;
+        public System.Windows.Forms.TextBox middle;
+        public System.Windows.Forms.TextBox right;
+        public System.Windows.Forms.TextBox bttmleft;
+        public System.Windows.Forms.TextBox bottom;
+        public System.Windows.Forms.TextBox bttmright;
+        public System.Windows.Forms.TextBox weight;
         private System.Windows.Forms.Button ok;
         private System.Windows.Forms.Button cancel;
         private System.Windows.Forms.Label label1;
