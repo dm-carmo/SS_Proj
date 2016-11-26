@@ -2,6 +2,7 @@
 using System.Linq;
 using Emgu.CV.Structure;
 using Emgu.CV;
+using System.Drawing;
 
 namespace SS_OpenCV
 {
@@ -9,6 +10,7 @@ namespace SS_OpenCV
     {
 
         /// <summary>
+        /// *** NOT EFFICIENT ***
         /// Inverts an image's colours
         /// </summary>
         /// <param name="img">The mage</param>
@@ -53,12 +55,13 @@ namespace SS_OpenCV
         }
 
         /// <summary>
+        /// *** NOT EFFICIENT ***
         /// Changes the brightness and contrast of a picture
         /// </summary>
         /// <param name="img">The picture to modify</param>
         /// <param name="brilho">The amount of brightness to add/remove</param>
         /// <param name="cont">The contrast multiplier</param>
-        unsafe public static void BrightCont(Image<Bgr, byte> img, int brilho, float cont)
+        unsafe public static void BrightContrast(Image<Bgr, byte> img, int brilho, double cont)
         {
 
             // direct access to the image memory(sequencial)
@@ -113,7 +116,7 @@ namespace SS_OpenCV
         /// </summary>
         /// <param name="img">The image</param>
         /// <param name="mode">Conversion mode</param>
-        unsafe public static void ConvertToGray(Image<Bgr, byte> img, char mode)
+        unsafe private static void ConvertToGray(Image<Bgr, byte> img, char mode)
         {
             // direct access to the image memory(sequencial)
             // direcion top left -> bottom right
@@ -162,14 +165,51 @@ namespace SS_OpenCV
         }
 
         /// <summary>
+        /// Converts an image to gray, copying the red component's value to the other components
+        /// </summary>
+        /// <param name="img">The image</param>
+        public static void RedChannel(Image<Bgr, byte> img)
+        {
+            ConvertToGray(img, 'R');
+        }
+
+        /// <summary>
+        /// Converts an image to gray, copying the green component's value to the other components
+        /// </summary>
+        /// <param name="img">The image</param>
+        public static void GreenChannel(Image<Bgr, byte> img)
+        {
+            ConvertToGray(img, 'G');
+        }
+
+        /// <summary>
+        /// Converts an image to gray, copying the blue component's value to the other components
+        /// </summary>
+        /// <param name="img">The image</param>
+        public static void BlueChannel(Image<Bgr, byte> img)
+        {
+            ConvertToGray(img, 'B');
+        }
+
+        /// <summary>
+        /// Converts an image to gray, using the average value of the 3 components
+        /// </summary>
+        /// <param name="img">The image</param>
+        public static void AvgChannel(Image<Bgr, byte> img)
+        {
+            ConvertToGray(img, 'M');
+        }
+
+        /// <summary>
         /// Moves an image
         /// </summary>
         /// <param name="img">The image to move</param>
+        /// <param name="imgCopy">A copy of the image</param>
         /// <param name="dx">Amount of pixels to move in the X axis</param>
         /// <param name="dy">Amount of pixels to move in the Y axis</param>
-        unsafe public static void Translate(Image<Bgr, byte> img, int dx, int dy)
+        unsafe public static void Translation(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, int dx, int dy)
         {
-            MIplImage copy = img.Copy().MIplImage;
+            MIplImage copy = imgCopy.MIplImage;
             MIplImage m = img.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
@@ -207,14 +247,16 @@ namespace SS_OpenCV
         }
 
         /// <summary>
+        /// *** HAS PROBLEMS ***
         /// Rotates an image
         /// </summary>
         /// <param name="img">The image to rotate</param>
-        /// <param name="ang">The angle of rotation (in degrees)</param>
-        unsafe public static void Rotate(Image<Bgr, byte> img, int ang)
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="ang">The angle of rotation (in radians)</param>
+        unsafe public static void Rotation(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float ang)
         {
             MIplImage m = img.MIplImage;
-            MIplImage copy = img.Copy().MIplImage;
+            MIplImage copy = imgCopy.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
 
@@ -222,9 +264,8 @@ namespace SS_OpenCV
             int nC = m.nChannels;
             int width = img.Width;
             int height = img.Height;
-            double rad = ang * Math.PI / 180;
-            double sine = Math.Sin(rad);
-            double cose = Math.Cos(rad);
+            double sine = Math.Sin(ang);
+            double cose = Math.Cos(ang);
 
             for (int y = 0; y < height; y++)
             {
@@ -256,16 +297,30 @@ namespace SS_OpenCV
 
         /// <summary>
         /// Zooms in/out on an image.
+        /// top-left corner is (0,0)
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="factor">Zoom factor</param>
+        unsafe public static void Scale(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor)
+        {
+            Scale_point_xy(img, imgCopy, factor, 0, 0);
+        }
+
+        /// <summary>
+        /// *** HAS PROBLEMS ***
+        /// Zooms in/out on an image.
         /// mouseX and mouseY determine the new top-left corner
         /// </summary>
         /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
         /// <param name="factor">Zoom factor</param>
         /// <param name="mouseX">Current X position of the mouse</param>
         /// <param name="mouseY">Current Y position of the mouse</param>
-        unsafe public static void Zoom(Image<Bgr, byte> img, float factor, int mouseX, int mouseY)
+        unsafe public static void Scale_point_xy(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor, int mouseX, int mouseY)
         {
             if (factor == 1 || factor < 0) return;
-            MIplImage copy = img.Copy().MIplImage;
+            MIplImage copy = imgCopy.MIplImage;
             MIplImage m = img.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
@@ -303,17 +358,32 @@ namespace SS_OpenCV
         }
 
         /// <summary>
+        /// *** ALMOST GOOD BUT NOT EFFICIENT ***
+        /// Calculates the mean of an image, using solution A.
+        /// Each pixel is replaced by the mean of their neighborhood (3x3)
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        public static void Mean(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        {
+            float[,] mat = { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
+
+            NonUniform(img, imgCopy, mat, 9);
+        }
+
+        /// <summary>
+        /// *** NOT VERY EFFICIENT ***
         /// Performs the binarization of an image, based on the Otsu method
         /// </summary>
         /// <param name="img">The image to binarize</param>
-        public static void OtsuBinarize(Image<Bgr, byte> img)
+        public static void ConvertToBW_Otsu(Image<Bgr, byte> img)
         {
             //covariance = q1*q2*(u1-u2)^2
             //q1 = sum(i = 0, t, P(i)) -> sum of the probabilities of a pixel being below the chosen threshold
             //q2 = sum(i = t + 1, 255, P(i)) -> sum of the probabilities of a pixel being above the chosen threshold
             //u1 = sum(i = 0, t, i * P(i))/q1 -> weighted mean (below threshold)
             //u2 = sum(i = t + 1, 255, i * P(i))/q2 -> weighted mean (above threshold)
-            int[] intensity = CalculateHistogram(img)[0];
+            int[] intensity = Histogram_Gray(img);
             double[] probs = new double[256]; //will save the various probabilities
             double[] vars = new double[254]; //will save all covariance values for each threshold (1-254 only)
             MIplImage m = img.MIplImage;
@@ -341,17 +411,18 @@ namespace SS_OpenCV
                 vars[t - 1] = q1 * q2 * (u1 - u2) * (u1 - u2);
             }
             int threshold = Array.IndexOf(vars, vars.Max()) + 1; //chooses the maximum covariance and respective threshold
-            ManualBinarize(img, threshold); //binarizes the image based on the chosen threshold
+            ConvertToBW(img, threshold); //binarizes the image based on the chosen threshold
         }
 
         /// <summary>
+        /// *** NOT QUITE PERFECT YET ***
         /// Performs the binarization of an image, based on a threshold
         /// </summary>
         /// <param name="img">The image to binarize</param>
         /// <param name="threshold">The binarization threshold</param>
-        unsafe public static void ManualBinarize(Image<Bgr, byte> img, int threshold)
+        unsafe public static void ConvertToBW(Image<Bgr, byte> img, int threshold)
         {
-            ConvertToGray(img, 'M'); //for best results we should convert the image to grayscale first
+            AvgChannel(img); //for best results we should convert the image to grayscale first
             MIplImage m = img.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
 
@@ -365,9 +436,8 @@ namespace SS_OpenCV
                 for (int x = 0; x < width; x++)
                 {
                     byte* dest = dataPtr + y * widthstep + x * nC;
-                    int[] bgr = new int[] { dest[0], dest[1], dest[2] };
 
-                    if (bgr.Max() >= threshold)
+                    if (dest[0] >= threshold)
                     {
                         dest[0] = dest[1] = dest[2] = 255;
                     }
@@ -381,20 +451,16 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// Calculates the RGB and intensity histograms of an image
+        /// Calculates the intensity histrogram of an image
         /// </summary>
         /// <param name="img">The image</param>
-        /// <returns>An array with the histogram values (intensitr, blue, red, green)</returns>
-        unsafe public static int[][] CalculateHistogram(Image<Bgr, byte> img)
+        /// <returns>An array with the histogram values (intensity)</returns>
+        unsafe public static int[] Histogram_Gray(Image<Bgr, byte> img)
         {
             int[] intensity = new int[256];
-            int[] blue = new int[256];
-            int[] green = new int[256];
-            int[] red = new int[256];
             MIplImage m = img.MIplImage;
             Image<Bgr, byte> grayscale = img.Copy();
-            ConvertToGray(grayscale, 'M'); //to calculate intensity histogram we should convert the image to grayscale
-            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            AvgChannel(grayscale); //to calculate intensity histogram we should convert the image to grayscale
             byte* grayscalePtr = (byte*)grayscale.MIplImage.imageData.ToPointer();
 
             int widthstep = m.widthStep;
@@ -406,27 +472,71 @@ namespace SS_OpenCV
             {
                 for (int x = 0; x < width; x++)
                 {
-                    byte* pixelPtr = dataPtr + y * widthstep + x * nC;
                     byte* grayPixelPtr = grayscalePtr + y * widthstep + x * nC;
-                    int[] bgr = new int[] { pixelPtr[0], pixelPtr[1], pixelPtr[2] };
-                    blue[bgr[0]]++;
-                    green[bgr[1]]++;
-                    red[bgr[2]]++;
                     intensity[grayPixelPtr[0]]++;
                 }
             }
 
-            return new int[][] { intensity, blue, green, red };
+            return intensity;
         }
 
         /// <summary>
+        /// Calculates the RGB histogram of an image
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <returns>A matrix with the histogram values (blue, green and red)</returns>
+        unsafe public static int[,] Histogram_RGB(Image<Bgr, byte> img)
+        {
+            int[,] bgrMat = new int[3, 256];
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = img.Width;
+            int height = img.Height;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    byte* pixelPtr = dataPtr + y * widthstep + x * nC;
+                    for (int i = 0; i < 3; i++) bgrMat[i, pixelPtr[i]]++;
+                }
+            }
+
+            return bgrMat;
+        }
+
+        /// <summary>
+        /// Calculates the RGB and intensity histograms of an image
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <returns>A matrix with the histogram values (intensity, blue, red, green)</returns>
+        public static int[,] Histogram_All(Image<Bgr, byte> img)
+        {
+            int[] intensity = Histogram_Gray(img);
+            int[,] bgrMat = Histogram_RGB(img);
+            int[,] ibgrMat = new int[4, 256];
+            for(int x = 0; x < 256; x++)
+            {
+                ibgrMat[0, x] = intensity[x];
+                for(int i = 1; i < 4; i++) ibgrMat[i, x] = bgrMat[i-1, x];
+            }
+
+            return ibgrMat;
+        }
+
+        /// <summary>
+        /// *** VERY INEFFICIENT, MARGINS NOT VERY GOOD ***
         /// Performs a median filter on an image
         /// </summary>
         /// <param name="img">The image</param>
-        unsafe public static void MedianFilter(Image<Bgr, byte> img)
+        /// <param name="imgCopy">A copy of the image</param>
+        unsafe public static void Median(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
             MIplImage m = img.MIplImage;
-            MIplImage copy = img.Copy().MIplImage;
+            MIplImage copy = imgCopy.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
 
@@ -435,11 +545,9 @@ namespace SS_OpenCV
             int width = img.Width;
             int height = img.Height;
 
-            int x, y;
-
-            for (y = 1; y < height - 1; y++)
+            for (int y = 1; y < height - 1; y++)
             {
-                for (x = 1; x < width - 1; x++)
+                for (int x = 1; x < width - 1; x++)
                 { //calculates the median for all central pixels
                     byte* pixelPtr = dataPtr + y * widthstep + x * nC;
                     byte* pixelPtrCopy = dataPtrCopy + (y - 1) * widthstep + (x - 1) * nC;
@@ -452,7 +560,7 @@ namespace SS_OpenCV
             CalculateMedianCorners(m, dataPtr, dataPtrCopy, width - 1, 0); //top-right
             CalculateMedianCorners(m, dataPtr, dataPtrCopy, width - 1, height - 1); //bottom-right
 
-            for (x = 1; x < width - 1; x++)
+            for (int x = 1; x < width - 1; x++)
             { //calculates the median for top and bottom margin pixels
                 byte* pixelPtr = dataPtr + x * nC;
                 byte* pixelPtrCopy = dataPtrCopy + (x - 1) * nC;
@@ -460,7 +568,7 @@ namespace SS_OpenCV
                 CalculateMedianMargins(m, pixelPtrCopy, pixelPtr, 1, height - 1); //bottom
             }
 
-            for (y = 1; y < height - 1; x++)
+            for (int y = 1; y < height - 1; y++)
             { //calculates the median for left and right margin pixels
                 byte* pixelPtr = dataPtr + y * widthstep;
                 byte* pixelPtrCopy = dataPtrCopy + (y - 1) * widthstep;
@@ -475,7 +583,7 @@ namespace SS_OpenCV
         /// <param name="m">Information about an image</param>
         /// <param name="origPtr">Pointer to the top-left pixel in the respective neighbourhood</param>
         /// <param name="copyPtr">Pointer to the pixel where we are calculating the median (we will modify this)</param>
-        unsafe public static void CalculateMedian(MIplImage m, byte* origPtr, byte* copyPtr)
+        unsafe private static void CalculateMedian(MIplImage m, byte* origPtr, byte* copyPtr)
         {
             int[,] distMat = new int[9, 9]; //a matrix used to store the distance between any 2 pixels
 
@@ -622,13 +730,35 @@ namespace SS_OpenCV
         }
 
         /// <summary>
+        /// *** HAS PROBLEMS ***
+        /// Performs a Sobel filter on an image
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        public static void Sobel(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        {
+            Image<Bgr, Byte> img2 = img.Copy();
+
+            float[,] mat1 = { { 1, 0, -1 }, { 2, 0, -2 }, { 1, 0, -1 } };
+
+            float[,] mat2 = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+
+            NonUniform(img, imgCopy, mat1, 1);
+
+            NonUniform(img2, img2.Copy(), mat2, 1);
+
+            SumPixels(img, img2);
+        }
+
+        /// <summary>
         /// Performs a differential edge detection filter on an image
         /// </summary>
         /// <param name="img">The image</param>
-        unsafe public static void DifferentialFilter(Image<Bgr, byte> img)
+        /// <param name="imgCopy">A copy of the image</param>
+        unsafe public static void Diferentiation(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
             MIplImage m = img.MIplImage;
-            MIplImage copy = img.Copy().MIplImage;
+            MIplImage copy = imgCopy.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
 
@@ -701,7 +831,7 @@ namespace SS_OpenCV
         /// </summary>
         /// <param name="img1">The first image (we will modify this one)</param>
         /// <param name="img2">The second image</param>
-        unsafe public static void SumPixels(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
+        unsafe private static void SumPixels(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
         {
             MIplImage m1 = img1.MIplImage;
             MIplImage m2 = img2.MIplImage;
@@ -738,15 +868,16 @@ namespace SS_OpenCV
         }
 
         /// <summary>
+        /// *** ALMOST GOOD ***
         /// Performs a non-uniform filter on an image
         /// </summary>
         /// <param name="img">The image</param>
         /// <param name="mat">The filter's matrix (multipliers)</param>
         /// <param name="weight">The weight of the final sum</param>
-        unsafe public static void NonUniformFilter(Image<Bgr, byte> img, int[,] mat, int weight)
+        unsafe public static void NonUniform(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float[,] mat, float weight)
         {
             MIplImage m = img.MIplImage;
-            MIplImage copy = img.Copy().MIplImage;
+            MIplImage copy = imgCopy.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
 
@@ -762,7 +893,7 @@ namespace SS_OpenCV
                 {
                     byte* dest = dataPtr + y * widthstep + x * nC;
                     //sum of each pixel's component, after multiplying them by the respective factor
-                    int[] sum = { 0, 0, 0 };
+                    float[] sum = { 0, 0, 0 };
                     for (int j = -1; j <= 1; j++)
                     {
                         for (int i = -1; i <= 1; i++)
@@ -791,9 +922,9 @@ namespace SS_OpenCV
 
             //processing corners and margins
             //top-left corner
-            int d0 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[0] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[0] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[0] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[0]) / weight);
-            int d1 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[1] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[1] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[1] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[1]) / weight);
-            int d2 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[2] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[2] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[2] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[2]) / weight);
+            float d0 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[0] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[0] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[0] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[0]) / weight);
+            float d1 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[1] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[1] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[1] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[1]) / weight);
+            float d2 = (((mat[0, 0] + mat[0, 1] + mat[1, 0] + mat[1, 1]) * dataPtrCopy[2] + (mat[2, 1] + mat[2, 0]) * (dataPtrCopy + widthstep)[2] + (mat[1, 2] + mat[0, 2]) * (dataPtrCopy + nC)[2] + mat[2, 2] * (dataPtrCopy + widthstep + nC)[2]) / weight);
             dataPtr[0] = (byte)(d0 > 255 ? 255 : (d0 < 0 ? Math.Abs(d0) : d0));
             dataPtr[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
             dataPtr[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
@@ -899,6 +1030,126 @@ namespace SS_OpenCV
                 margemDir[1] = (byte)(d1 > 255 ? 255 : (d1 < 0 ? Math.Abs(d1) : d1));
                 margemDir[2] = (byte)(d2 > 255 ? 255 : (d2 < 0 ? Math.Abs(d2) : d2));
             }
+        }
+
+        /// <summary>
+        /// *** TO DO ***
+        /// Calculates the mean of an image, using solution B.
+        /// Each pixel is replaced by the mean of their neighborhood (3x3)
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        public static void Mean_solutionB(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        {
+
+        }
+
+        /// <summary>
+        /// *** TO DO ***
+        /// Calculates the mean of an image, using solution C.
+        /// Each pixel is replaced by the mean of their neighborhood (size x size)
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="size">The size of the filter</param>
+        public static void Mean_solutionC(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, int size)
+        {
+
+        }
+
+        /// <summary>
+        /// *** TO DO ***
+        /// Performs a Roberts filter on an image
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        public static void Roberts(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        {
+
+        }
+
+        /// <summary>
+        /// *** TO DO ***
+        /// Finds a license plate in an image and returns its location and respective characters
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="LP_Location">The location of the license plate</param>
+        /// <param name="LP_Chr1">The location of the first character</param>
+        /// <param name="LP_Chr2">The location of the second character</param>
+        /// <param name="LP_Chr3">The location of the third character</param>
+        /// <param name="LP_Chr4">The location of the fourth character</param>
+        /// <param name="LP_Chr5">The location of the fifth character</param>
+        /// <param name="LP_Chr6">The location of the sixth character</param>
+        /// <param name="LP_C1">The value of the first character</param>
+        /// <param name="LP_C2">The value of the second character</param>
+        /// <param name="LP_C3">The value of the third character</param>
+        /// <param name="LP_C4">The value of the fourth character</param>
+        /// <param name="LP_C5">The value of the fifth character</param>
+        /// <param name="LP_C6">The value of the sixth character</param>
+        /// <param name="LP_Country">The license plate's country</param>
+        /// <param name="LP_Month">The license plate's month</param>
+        /// <param name="LP_Year">The license plate's year</param>
+        public static void LP_Recognition(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, out Rectangle LP_Location, out Rectangle LP_Chr1,
+            out Rectangle LP_Chr2, out Rectangle LP_Chr3, out Rectangle LP_Chr4, out Rectangle LP_Chr5, out Rectangle LP_Chr6,
+            out string LP_C1, out string LP_C2, out string LP_C3, out string LP_C4, out string LP_C5, out string LP_C6,
+            out string LP_Country, out string LP_Month, out string LP_Year)
+        {
+            LP_Location = new Rectangle();
+            LP_Chr1 = new Rectangle();
+            LP_Chr2 = new Rectangle();
+            LP_Chr3 = new Rectangle();
+            LP_Chr4 = new Rectangle();
+            LP_Chr5 = new Rectangle();
+            LP_Chr6 = new Rectangle();
+            LP_C1 = "";
+            LP_C2 = "";
+            LP_C3 = "";
+            LP_C4 = "";
+            LP_C5 = "";
+            LP_C6 = "";
+            LP_Country = "";
+            LP_Month = "";
+            LP_Year = "";
+        }
+
+        /// <summary>
+        /// *** TO DO ***
+        /// Rotates an image using bilinear interpolation
+        /// </summary>
+        /// <param name="img">The image to rotate</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="angle">The angle of rotation (in radians)</param>
+        public static void Rotation_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float angle)
+        {
+
+        }
+
+        /// <summary>
+        /// Zooms in/out on an image, using bilinear interpolation.
+        /// top-left corner is (0,0)
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="factor">Zoom factor</param>
+        public static void Scale_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor)
+        {
+            Scale_point_xy_Bilinear(img, imgCopy, factor, 0, 0);
+        }
+
+        /// <summary>
+        /// *** TO DO ***
+        /// Zooms in/out on an image, using bilinear interpolation.
+        /// mouseX and mouseY determine the new top-left corner
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="factor">Zoom factor</param>
+        /// <param name="mouseX">Current X position of the mouse</param>
+        /// <param name="mouseY">Current Y position of the mouse</param>
+        public static void Scale_point_xy_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor, int mouseX, int mouseY)
+        {
+
         }
     }
 }

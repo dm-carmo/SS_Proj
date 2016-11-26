@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -124,7 +123,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            ImageClass.ConvertToGray(img, 'M');
+            ImageClass.AvgChannel(img);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -163,7 +162,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            ImageClass.ConvertToGray(img, 'R');
+            ImageClass.RedChannel(img);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -182,7 +181,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            ImageClass.ConvertToGray(img, 'G');
+            ImageClass.GreenChannel(img);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -200,7 +199,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            ImageClass.ConvertToGray(img, 'B');
+            ImageClass.BlueChannel(img);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -218,7 +217,7 @@ namespace SS_OpenCV
             imgUndo = img.Copy();
 
             int brilho;
-            float cont;
+            double cont;
             DoubleInputBox dib = new DoubleInputBox("Brightness:", "Contrast:", "Brightness/Contrast", numberTextBox, decimalTextBox);
             dib.ShowDialog();
 
@@ -233,7 +232,7 @@ namespace SS_OpenCV
 
             if (dib.DialogResult == DialogResult.OK)
             {
-                ImageClass.BrightCont(img, brilho, cont);
+                ImageClass.BrightContrast(img, brilho, cont);
 
                 ImageViewer.Image = img.Bitmap;
                 ImageViewer.Refresh(); // refresh image on the screen
@@ -260,7 +259,7 @@ namespace SS_OpenCV
 
             if (dib.DialogResult == DialogResult.OK)
             {
-                ImageClass.Translate(img, dx, dy);
+                ImageClass.Translation(img, img.Copy(), dx, dy);
 
                 ImageViewer.Image = img.Bitmap;
                 ImageViewer.Refresh(); // refresh image on the screen
@@ -285,8 +284,9 @@ namespace SS_OpenCV
             {
 
                 int ang = Convert.ToInt32(rot.ValueTextBox.Text);
+                float rad = Convert.ToSingle(Math.PI / 180.0 * ang);
 
-                ImageClass.Rotate(img, ang);
+                ImageClass.Rotation(img, img.Copy(), rad);
 
                 ImageViewer.Image = img.Bitmap;
                 ImageViewer.Refresh(); // refresh image on the screen
@@ -318,9 +318,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            int[,] mat = { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
-
-            ImageClass.NonUniformFilter(img, mat, 9);
+            ImageClass.Mean(img, img.Copy());
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -339,7 +337,7 @@ namespace SS_OpenCV
             WeightMatrix wm = new WeightMatrix();
             if (wm.ShowDialog() == DialogResult.OK)
             {
-                int[,] mat = {{Convert.ToInt32(wm.topleft.Text),
+                float[,] mat = {{Convert.ToInt32(wm.topleft.Text),
                                 Convert.ToInt32(wm.top.Text),
                                 Convert.ToInt32(wm.topright.Text) },
                                 { Convert.ToInt32(wm.left.Text),
@@ -349,7 +347,7 @@ namespace SS_OpenCV
                                     Convert.ToInt32(wm.bottom.Text),
                                     Convert.ToInt32(wm.bttmright.Text) }
                 };
-                ImageClass.NonUniformFilter(img, mat, Convert.ToInt32(wm.weight.Text));
+                ImageClass.NonUniform(img, img.Copy(), mat, Convert.ToInt32(wm.weight.Text));
             }
             else
             {
@@ -370,17 +368,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            Image<Bgr, Byte> img2 = img.Copy();
-
-            int[,] mat1 = { { 1, 0, -1 }, { 2, 0, -2 }, { 1, 0, -1 } };
-
-            int[,] mat2 = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
-
-            ImageClass.NonUniformFilter(img, mat1, 1);
-
-            ImageClass.NonUniformFilter(img2, mat2, 1);
-
-            ImageClass.SumPixels(img, img2);
+            ImageClass.Sobel(img, img.Copy());
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -397,7 +385,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            ImageClass.DifferentialFilter(img);
+            ImageClass.Diferentiation(img, img.Copy());
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -414,7 +402,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            ImageClass.MedianFilter(img);
+            ImageClass.Median(img, img.Copy());
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -427,9 +415,9 @@ namespace SS_OpenCV
             if (img == null) // verify if the image is already opened
                 return;
 
-            int[][] hists = ImageClass.CalculateHistogram(img);
+            int[,] hists = ImageClass.Histogram_All(img);
 
-            new HistogramForm(hists[0], hists[1], hists[2], hists[3]).ShowDialog();
+            new HistogramForm(hists).ShowDialog();
 
         }
 
@@ -448,7 +436,7 @@ namespace SS_OpenCV
 
             int threshold = Convert.ToInt32(thres.ValueTextBox.Text);
 
-            ImageClass.ManualBinarize(img, threshold);
+            ImageClass.ConvertToBW(img, threshold);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -465,7 +453,7 @@ namespace SS_OpenCV
             //copy Undo Image
             imgUndo = img.Copy();
 
-            ImageClass.OtsuBinarize(img);
+            ImageClass.ConvertToBW_Otsu(img);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -493,7 +481,7 @@ namespace SS_OpenCV
 
             Cursor = Cursors.WaitCursor; // clock cursor 
 
-            ImageClass.Zoom(img, factor, mouseX, mouseY);
+            ImageClass.Scale_point_xy(img, img.Copy(), factor, mouseX, mouseY);
 
             ImageViewer.Image = img.Bitmap;
             ImageViewer.Refresh(); // refresh image on the screen
@@ -509,6 +497,26 @@ namespace SS_OpenCV
         private void evalFormToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new EvalForm().ShowDialog();
+        }
+
+        private void rGBToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+
+            int[,] hists = ImageClass.Histogram_RGB(img);
+
+            new HistogramForm(hists).ShowDialog();
+        }
+
+        private void intensityToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+
+            int[] intensity = ImageClass.Histogram_Gray(img);
+
+            new HistogramForm(intensity).ShowDialog();
         }
 
         private void decimalTextBox(object sender, KeyPressEventArgs e)
