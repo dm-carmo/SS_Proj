@@ -10,7 +10,6 @@ namespace SS_OpenCV
     {
 
         /// <summary>
-        /// *** NOT EFFICIENT ***
         /// Inverts an image's colours
         /// </summary>
         /// <param name="img">The mage</param>
@@ -21,41 +20,35 @@ namespace SS_OpenCV
 
             MIplImage m = img.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte blue, green, red;
 
             int width = img.Width;
             int height = img.Height;
             int nChan = m.nChannels; // number of channels - 3
             int padding = m.widthStep - m.nChannels * m.width; // alignment bytes (padding)
 
-            if (nChan == 3) // image in RGB
+            for (int y = 0; y < height; y++)
             {
-                for (int y = 0; y < img.Height; y++)
+                for (int x = 0; x < width; x++)
                 {
-                    for (int x = 0; x < img.Width; x++)
-                    {
-                        //gets the 3 components
-                        blue = dataPtr[0];
-                        green = dataPtr[1];
-                        red = dataPtr[2];
+                    //gets the 3 components
 
-                        // stores the new values in the image
-                        dataPtr[0] = (byte)(255 - blue);
-                        dataPtr[1] = (byte)(255 - green);
-                        dataPtr[2] = (byte)(255 - red);
+                    // stores the new values in the image
+                    dataPtr[0] = (byte)(255 - dataPtr[0]);
+                    dataPtr[1] = (byte)(255 - dataPtr[1]);
+                    dataPtr[2] = (byte)(255 - dataPtr[2]);
 
-                        // moves the pointer to the next pixel
-                        dataPtr += nChan;
-                    }
-
-                    //at the end of the line moves the pointer by the alignment bytes (padding)
-                    dataPtr += padding;
+                    // moves the pointer to the next pixel
+                    dataPtr += nChan;
                 }
+
+                //at the end of the line moves the pointer by the alignment bytes (padding)
+                dataPtr += padding;
+
             }
         }
 
         /// <summary>
-        /// *** NOT EFFICIENT ***
+        /// *** ALMOST EFFICIENT ***
         /// Changes the brightness and contrast of a picture
         /// </summary>
         /// <param name="img">The picture to modify</param>
@@ -76,37 +69,35 @@ namespace SS_OpenCV
             int nChan = m.nChannels; // number of channels - 3
             int padding = m.widthStep - m.nChannels * m.width; // alignment bytes (padding)
 
-            if (nChan == 3) // image in RGB
+            for (int y = 0; y < height; y++)
             {
-                for (int y = 0; y < img.Height; y++)
+                for (int x = 0; x < width; x++)
                 {
-                    for (int x = 0; x < img.Width; x++)
-                    {
-                        //gets the 3 components
-                        blue = dataPtr[0] * cont + brilho;
-                        green = dataPtr[1] * cont + brilho;
-                        red = dataPtr[2] * cont + brilho;
+                    //gets the 3 components
+                    blue = Math.Round(dataPtr[0] * cont + brilho);
+                    green = Math.Round(dataPtr[1] * cont + brilho);
+                    red = Math.Round(dataPtr[2] * cont + brilho);
 
-                        if (blue > 255) blue = 255;
-                        if (green > 255) green = 255;
-                        if (red > 255) red = 255;
+                    if (blue > 255) blue = 255;
+                    if (green > 255) green = 255;
+                    if (red > 255) red = 255;
 
-                        if (blue < 0) blue = 0;
-                        if (red < 0) red = 0;
-                        if (green < 0) green = 0;
+                    if (blue < 0) blue = 0;
+                    if (red < 0) red = 0;
+                    if (green < 0) green = 0;
 
-                        // stores the new values in the image
-                        dataPtr[0] = (byte)Math.Round(blue);
-                        dataPtr[1] = (byte)Math.Round(green);
-                        dataPtr[2] = (byte)Math.Round(red);
+                    // stores the new values in the image
+                    dataPtr[0] = (byte)blue;
+                    dataPtr[1] = (byte)green;
+                    dataPtr[2] = (byte)red;
 
-                        // moves the pointer to the next pixel
-                        dataPtr += nChan;
-                    }
-
-                    //at the end of the line moves the pointer by the alignment bytes (padding)
-                    dataPtr += padding;
+                    // moves the pointer to the next pixel
+                    dataPtr += nChan;
                 }
+
+                //at the end of the line moves the pointer by the alignment bytes (padding)
+                dataPtr += padding;
+
             }
         }
 
@@ -256,9 +247,8 @@ namespace SS_OpenCV
         unsafe public static void Rotation(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float ang)
         {
             MIplImage m = img.MIplImage;
-            MIplImage copy = imgCopy.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
@@ -459,9 +449,7 @@ namespace SS_OpenCV
         {
             int[] intensity = new int[256];
             MIplImage m = img.MIplImage;
-            Image<Bgr, byte> grayscale = img.Copy();
-            AvgChannel(grayscale); //to calculate intensity histogram we should convert the image to grayscale
-            byte* grayscalePtr = (byte*)grayscale.MIplImage.imageData.ToPointer();
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
@@ -472,8 +460,9 @@ namespace SS_OpenCV
             {
                 for (int x = 0; x < width; x++)
                 {
-                    byte* grayPixelPtr = grayscalePtr + y * widthstep + x * nC;
-                    intensity[grayPixelPtr[0]]++;
+                    byte* pixelPtr = imgPtr + y * widthstep + x * nC;
+                    //int avg = (int)Math.Round((pixelPtr[0] + pixelPtr[1] + pixelPtr[2]) / 3.0);
+                    intensity[(int)Math.Round((pixelPtr[0] + pixelPtr[1] + pixelPtr[2]) / 3.0)]++;
                 }
             }
 
@@ -489,7 +478,7 @@ namespace SS_OpenCV
         {
             int[,] bgrMat = new int[3, 256];
             MIplImage m = img.MIplImage;
-            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtr = (byte*)img.MIplImage.imageData.ToPointer(); // Pointer to the image
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
@@ -501,7 +490,9 @@ namespace SS_OpenCV
                 for (int x = 0; x < width; x++)
                 {
                     byte* pixelPtr = dataPtr + y * widthstep + x * nC;
-                    for (int i = 0; i < 3; i++) bgrMat[i, pixelPtr[i]]++;
+                    bgrMat[0, pixelPtr[0]]++;
+                    bgrMat[1, pixelPtr[1]]++;
+                    bgrMat[2, pixelPtr[2]]++;
                 }
             }
 
@@ -518,10 +509,10 @@ namespace SS_OpenCV
             int[] intensity = Histogram_Gray(img);
             int[,] bgrMat = Histogram_RGB(img);
             int[,] ibgrMat = new int[4, 256];
-            for(int x = 0; x < 256; x++)
+            for (int x = 0; x < 256; x++)
             {
                 ibgrMat[0, x] = intensity[x];
-                for(int i = 1; i < 4; i++) ibgrMat[i, x] = bgrMat[i-1, x];
+                for (int i = 1; i < 4; i++) ibgrMat[i, x] = bgrMat[i - 1, x];
             }
 
             return ibgrMat;
@@ -843,9 +834,9 @@ namespace SS_OpenCV
             int width = img1.Width;
             int height = img1.Height;
 
-            for (int y = 0; y < img1.Height; y++)
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < img1.Width; x++)
+                for (int x = 0; x < width; x++)
                 {
                     byte* orig = dataPtr1 + y * widthstep + x * nC;
                     byte* sum = dataPtr2 + y * widthstep + x * nC;
@@ -899,7 +890,7 @@ namespace SS_OpenCV
                         for (int i = -1; i <= 1; i++)
                         {
                             byte* orig = dataPtrCopy + (y + j) * widthstep + (x + i) * nC;
-                            //gets multiplier from the matrix and applies iut to each component
+                            //gets multiplier from the matrix and applies it to each component
                             //adding the value to the sum array
                             sum[0] += mat[i + 1, j + 1] * orig[0];
                             sum[1] += mat[i + 1, j + 1] * orig[1];
@@ -1058,14 +1049,79 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** TO DO ***
         /// Performs a Roberts filter on an image
         /// </summary>
         /// <param name="img">The image</param>
         /// <param name="imgCopy">A copy of the image</param>
-        public static void Roberts(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        unsafe public static void Roberts(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
+            MIplImage m = img.MIplImage;
+            MIplImage copy = imgCopy.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
 
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = img.Width;
+            int height = img.Height;
+
+            //Calculates the filter's value for all pixels except bottom and right margins
+            for (int y = 0; y < height - 1; y++)
+            {
+                for (int x = 0; x < width - 1; x++)
+                {
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+                    byte* currPt = dataPtrCopy + y * widthstep + x * nC;
+                    int[] sum = { 0, 0, 0 };
+                    byte* rightPt = dataPtrCopy + y * widthstep + (x + 1) * nC; //the pixel to the right
+                    byte* rightdownPt = dataPtrCopy + (y + 1) * widthstep + (x + 1) * nC; //the pixel to the right
+                    byte* downPt = dataPtrCopy + (y + 1) * widthstep + x * nC; //the pixel below
+                    sum[0] = Math.Abs(currPt[0] - rightdownPt[0]) + Math.Abs(rightPt[0] - downPt[0]);
+                    sum[1] = Math.Abs(currPt[1] - rightdownPt[1]) + Math.Abs(rightPt[1] - downPt[1]);
+                    sum[2] = Math.Abs(currPt[2] - rightdownPt[2]) + Math.Abs(rightPt[2] - downPt[2]);
+                    dest[0] = (byte)(sum[0] > 255 ? 255 : sum[0]);
+                    dest[1] = (byte)(sum[1] > 255 ? 255 : sum[1]);
+                    dest[2] = (byte)(sum[2] > 255 ? 255 : sum[2]);
+                }
+            }
+
+            //calculates the filter's value for the right margin
+            for (int y = 0; y < height - 1; y++)
+            {
+                byte* dest = dataPtr + y * widthstep + (width - 1) * nC;
+                byte* currPt = dataPtrCopy + y * widthstep + (width - 1) * nC;
+                int[] sum = { 0, 0, 0 };
+                //no pixel to the right (margin duplication, difference would be zero)
+                byte* downPt = dataPtrCopy + (y + 1) * widthstep + (width - 1) * nC;
+                sum[0] = 2 * Math.Abs(currPt[0] - downPt[0]);
+                sum[1] = 2 * Math.Abs(currPt[1] - downPt[1]);
+                sum[2] = 2 * Math.Abs(currPt[2] - downPt[2]);
+                dest[0] = (byte)(sum[0] > 255 ? 255 : sum[0]);
+                dest[1] = (byte)(sum[1] > 255 ? 255 : sum[1]);
+                dest[2] = (byte)(sum[2] > 255 ? 255 : sum[2]);
+            }
+
+            //calculates the filter's value for the bottom margin
+            for (int x = 0; x < width - 1; x++)
+            {
+                byte* dest = dataPtr + (height - 1) * widthstep + x * nC;
+                byte* currPt = dataPtrCopy + (height - 1) * widthstep + x * nC;
+                int[] sum = { 0, 0, 0 };
+                //no pixel below (margin duplication, difference would be zero)
+                byte* rightPt = dataPtrCopy + (height - 1) * widthstep + (x + 1) * nC;
+                sum[0] = 2 * Math.Abs(currPt[0] - rightPt[0]);
+                sum[1] = 2 * Math.Abs(currPt[1] - rightPt[1]);
+                sum[2] = 2 * Math.Abs(currPt[2] - rightPt[2]);
+                dest[0] = (byte)(sum[0] > 255 ? 255 : sum[0]);
+                dest[1] = (byte)(sum[1] > 255 ? 255 : sum[1]);
+                dest[2] = (byte)(sum[2] > 255 ? 255 : sum[2]);
+            }
+
+            //bottom-right corner has no one to its right or below, so it becomes black (margin duplication, differences would be zero)
+            dataPtr = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
+            dataPtr[0] = 0;
+            dataPtr[1] = 0;
+            dataPtr[2] = 0;
         }
 
         /// <summary>
