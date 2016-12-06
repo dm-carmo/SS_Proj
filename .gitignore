@@ -279,3 +279,5 @@ __pycache__/
 # Cake - Uncomment if you are using it
 # tools/
 .vs/SS_OpenCV_2012/v14/.suo
+SS_OpenCV/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+SS_OpenCV/bin/Debug/SS_files.csv
