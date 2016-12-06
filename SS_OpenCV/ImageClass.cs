@@ -21,10 +21,10 @@ namespace SS_OpenCV
             MIplImage m = img.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
 
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
             int nChan = m.nChannels; // number of channels - 3
-            int padding = m.widthStep - m.nChannels * m.width; // alignment bytes (padding)
+            int padding = m.widthStep - nChan * width; // alignment bytes (padding)
 
             for (int y = 0; y < height; y++)
             {
@@ -48,7 +48,6 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** ALMOST EFFICIENT ***
         /// Changes the brightness and contrast of a picture
         /// </summary>
         /// <param name="img">The picture to modify</param>
@@ -64,10 +63,10 @@ namespace SS_OpenCV
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             double blue, green, red;
 
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
             int nChan = m.nChannels; // number of channels - 3
-            int padding = m.widthStep - m.nChannels * m.width; // alignment bytes (padding)
+            int padding = m.widthStep - nChan * width; // alignment bytes (padding)
 
             for (int y = 0; y < height; y++)
             {
@@ -110,49 +109,47 @@ namespace SS_OpenCV
         unsafe private static void ConvertToGray(Image<Bgr, byte> img, char mode)
         {
             // direct access to the image memory(sequencial)
-            // direcion top left -> bottom right
+            // direction top left -> bottom right
 
             MIplImage m = img.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte blue, green, red, gray;
+            byte gray;
 
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
             int nChan = m.nChannels; // number of channels - 3
-            int padding = m.widthStep - m.nChannels * m.width; // alignment bytes (padding)
+            int padding = m.widthStep - nChan * width; // alignment bytes (padding)
 
-            if (nChan == 3) // image in RGB
+            for (int y = 0; y < height; y++)
             {
-                for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
                 {
-                    for (int x = 0; x < width; x++)
+                    //gets the 3 components
+                    byte blue = dataPtr[0];
+                    byte green = dataPtr[1];
+                    byte red = dataPtr[2];
+
+                    // convert to gray
+                    switch (mode)
                     {
-                        //gets the 3 components
-                        blue = dataPtr[0];
-                        green = dataPtr[1];
-                        red = dataPtr[2];
-
-                        // convert to gray
-                        switch (mode)
-                        {
-                            case 'M': gray = (byte)Math.Round(((int)blue + green + red) / 3.0); break; //uses the average of the 3 components
-                            case 'R': gray = red; break; //uses the value of the red component
-                            case 'G': gray = green; break; //uses the value of the green component
-                            case 'B': gray = blue; break; //uses the value of the blue component
-                            default: gray = 0; break;
-                        }
-
-                        // stores the new values in the image
-                        dataPtr[0] = dataPtr[1] = dataPtr[2] = gray;
-
-                        // moves the pointer to the next pixel
-                        dataPtr += nChan;
+                        case 'M': gray = (byte)Math.Round(((int)blue + green + red) / 3.0); break; //uses the average of the 3 components
+                        case 'R': gray = red; break; //uses the value of the red component
+                        case 'G': gray = green; break; //uses the value of the green component
+                        case 'B': gray = blue; break; //uses the value of the blue component
+                        default: gray = 0; break;
                     }
 
-                    //at the end of the line moves the pointer by the alignment bytes (padding)
-                    dataPtr += padding;
+                    // stores the new values in the image
+                    dataPtr[0] = dataPtr[1] = dataPtr[2] = gray;
+
+                    // moves the pointer to the next pixel
+                    dataPtr += nChan;
                 }
+
+                //at the end of the line moves the pointer by the alignment bytes (padding)
+                dataPtr += padding;
             }
+
         }
 
         /// <summary>
@@ -207,8 +204,8 @@ namespace SS_OpenCV
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
 
 
             for (int y = 0; y < height; y++)
@@ -238,7 +235,6 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** HAS PROBLEMS ***
         /// Rotates an image
         /// </summary>
         /// <param name="img">The image to rotate</param>
@@ -256,32 +252,37 @@ namespace SS_OpenCV
             int height = img.Height;
             double sine = Math.Sin(ang);
             double cose = Math.Cos(ang);
+            int cx = width / 2;
+            int cy = height / 2;
+            int padding = widthstep - nC * width; // alignment bytes (padding)
 
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     //inverse rotation: gets the original position of the pixel from the new pixel's coordinates
-                    int nx = (int)((x - width / 2) * cose - (height / 2 - y) * sine + width / 2);
-                    int ny = (int)(height / 2 - (x - width / 2) * sine - (height / 2 - y) * cose);
+                    int nx = (int)Math.Round((x - cx) * cose - (cy - y) * sine + cx);
+                    int ny = (int)Math.Round(cy - (x - cx) * sine - (cy - y) * cose);
                     byte* orig = dataPtrCopy + ny * widthstep + nx * nC;
-                    byte* dest = dataPtr + y * widthstep + x * nC;
+                    //byte* dest = dataPtr + y * widthstep + x * nC;
 
                     if (ny >= 0 && ny < height && nx >= 0 && nx < width)
                     {
-                        dest[0] = orig[0];
-                        dest[1] = orig[1];
-                        dest[2] = orig[2];
+                        dataPtr[0] = orig[0];
+                        dataPtr[1] = orig[1];
+                        dataPtr[2] = orig[2];
                     }
 
                     else //if we're trying to get pixels from outside the original image
                     {
-                        dest[0] = 0;
-                        dest[1] = 0;
-                        dest[2] = 0;
+                        dataPtr[0] = 0;
+                        dataPtr[1] = 0;
+                        dataPtr[2] = 0;
                     }
+                    dataPtr += nC;
 
                 }
+                dataPtr += padding;
             }
         }
 
@@ -294,11 +295,10 @@ namespace SS_OpenCV
         /// <param name="factor">Zoom factor</param>
         unsafe public static void Scale(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor)
         {
-            Scale_point_xy(img, imgCopy, factor, 0, 0);
+            Scale_point_xy(img, imgCopy, factor, img.Width, img.Height);
         }
 
         /// <summary>
-        /// *** HAS PROBLEMS ***
         /// Zooms in/out on an image.
         /// mouseX and mouseY determine the new top-left corner
         /// </summary>
@@ -317,16 +317,18 @@ namespace SS_OpenCV
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
+            int cx = width / 2;
+            int cy = height / 2;
 
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     //Gets the original position of the pixel
-                    int ny = (int)(y / factor + mouseY);
-                    int nx = (int)(x / factor + mouseX);
+                    int nx = (int)Math.Round((x - cx) / factor + mouseX);
+                    int ny = (int)Math.Round((y - cy) / factor + mouseY);
                     byte* orig = dataPtrCopy + ny * widthstep + nx * nC;
                     byte* dest = dataPtr + y * widthstep + x * nC;
 
@@ -348,21 +350,44 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** ALMOST GOOD BUT NOT EFFICIENT ***
+        /// *** NEEDS MARGINS ***
         /// Calculates the mean of an image, using solution A.
         /// Each pixel is replaced by the mean of their neighborhood (3x3)
         /// </summary>
         /// <param name="img">The image</param>
         /// <param name="imgCopy">A copy of the image</param>
-        public static void Mean(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        unsafe public static void Mean(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
-            float[,] mat = { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
+            MIplImage copy = imgCopy.MIplImage;
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
 
-            NonUniform(img, imgCopy, mat, 9);
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+            
+            for(int y = 1; y < height - 1; y++)
+            {
+                for (int x = 1; x < width - 1; x++)
+                {
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+                    byte* orig = dataPtrCopy + (y - 1) * widthstep + (x - 1) * nC;
+                    dest[0] = (byte)Math.Round((orig[0] + orig[nC] + orig[2 * nC] + orig[widthstep] + orig[widthstep + nC] +
+                        orig[widthstep + 2 * nC] + orig[2 * widthstep] + orig[2 * widthstep + nC] + orig[2 * widthstep + 2 * nC]) / 9.0);
+                    dest[1] = (byte)Math.Round((orig[1] + orig[nC + 1] + orig[2 * nC + 1] + orig[widthstep + 1] + orig[widthstep + nC + 1] +
+                        orig[widthstep + 2 * nC + 1] + orig[2 * widthstep + 1] + orig[2 * widthstep + nC + 1] + orig[2 * widthstep + 2 * nC + 1]) / 9.0);
+                    dest[2] = (byte)Math.Round((orig[2] + orig[nC + 2] + orig[2 * nC + 2] + orig[widthstep + 2] + orig[widthstep + nC + 2] +
+                        orig[widthstep + 2 * nC + 2] + orig[2 * widthstep + 2] + orig[2 * widthstep + nC + 2] + orig[2 * widthstep + 2 * nC + 2]) / 9.0);
+
+                }
+            }
+
+            //fazer bordas
         }
 
         /// <summary>
-        /// *** NOT VERY EFFICIENT ***
         /// Performs the binarization of an image, based on the Otsu method
         /// </summary>
         /// <param name="img">The image to binarize</param>
@@ -375,17 +400,18 @@ namespace SS_OpenCV
             //u2 = sum(i = t + 1, 255, i * P(i))/q2 -> weighted mean (above threshold)
             int[] intensity = Histogram_Gray(img);
             double[] probs = new double[256]; //will save the various probabilities
-            double[] vars = new double[254]; //will save all covariance values for each threshold (1-254 only)
             MIplImage m = img.MIplImage;
             int npixels = m.width * m.height;
-            int i;
-            for (i = 0; i < 256; i++) //calculates probabilities for each intensity
+            for (int i = 0; i < 256; i++) //calculates probabilities for each intensity
             {
                 probs[i] = (double)intensity[i] / npixels;
             }
+            int threshold = 0;
+            double covar = 0.0;
             for (int t = 1; t < 255; t++) //calculates covariance for each threshold
             {
                 double q1 = 0.0, q2 = 0.0, u1 = 0.0, u2 = 0.0;
+                int i;
                 for (i = 0; i < t; i++)
                 {
                     q1 += probs[i];
@@ -398,9 +424,13 @@ namespace SS_OpenCV
                 }
                 u1 /= q1;
                 u2 /= q2;
-                vars[t - 1] = q1 * q2 * (u1 - u2) * (u1 - u2);
+                double res = q1 * q2 * (u1 - u2) * (u1 - u2);
+                if(res > covar)
+                {
+                    threshold = t;
+                    covar = res;
+                }
             }
-            int threshold = Array.IndexOf(vars, vars.Max()) + 1; //chooses the maximum covariance and respective threshold
             ConvertToBW(img, threshold); //binarizes the image based on the chosen threshold
         }
 
@@ -418,8 +448,8 @@ namespace SS_OpenCV
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
 
             for (int y = 0; y < height; y++)
             {
@@ -453,15 +483,14 @@ namespace SS_OpenCV
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
 
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     byte* pixelPtr = imgPtr + y * widthstep + x * nC;
-                    //int avg = (int)Math.Round((pixelPtr[0] + pixelPtr[1] + pixelPtr[2]) / 3.0);
                     intensity[(int)Math.Round((pixelPtr[0] + pixelPtr[1] + pixelPtr[2]) / 3.0)]++;
                 }
             }
@@ -482,8 +511,8 @@ namespace SS_OpenCV
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
 
             for (int y = 0; y < height; y++)
             {
@@ -533,8 +562,8 @@ namespace SS_OpenCV
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
 
             for (int y = 1; y < height - 1; y++)
             {
@@ -721,24 +750,51 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** HAS PROBLEMS ***
+        /// *** NEEDS MARGINS ***
         /// Performs a Sobel filter on an image
         /// </summary>
         /// <param name="img">The image</param>
         /// <param name="imgCopy">A copy of the image</param>
-        public static void Sobel(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        unsafe public static void Sobel(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
-            Image<Bgr, Byte> img2 = img.Copy();
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer();
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer();
+            int width = m.width;
+            int height = m.height;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
 
-            float[,] mat1 = { { 1, 0, -1 }, { 2, 0, -2 }, { 1, 0, -1 } };
+            for(int y = 1; y < height - 1; y++)
+            {
+                for(int x = 1; x < width - 1; x++)
+                {
+                    byte* orig = dataPtrCopy + y * widthstep + x * nC;
+                    byte* dest = dataPtr + y * widthstep + x * nC;
 
-            float[,] mat2 = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+                    int b = Math.Abs((orig - widthstep - nC)[0] - (orig + widthstep - nC)[0] + 2 * (orig - widthstep)[0] - 2 * (orig + widthstep)[0] +
+                        (orig + nC - widthstep)[0] - (orig + nC + widthstep)[0]) + Math.Abs(-(orig - nC - widthstep)[0] - 2 * (orig - nC)[0] - 
+                        (orig - nC + widthstep)[0] + (orig + nC - widthstep)[0] + 2 * (orig + nC)[0] + (orig + nC + widthstep)[0]);
 
-            NonUniform(img, imgCopy, mat1, 1);
+                    int g = Math.Abs((orig - widthstep - nC)[1] - (orig + widthstep - nC)[1] + 2 * (orig - widthstep)[1] - 2 * (orig + widthstep)[1] +
+                        (orig + nC - widthstep)[1] - (orig + nC + widthstep)[1]) + Math.Abs(-(orig - nC - widthstep)[1] - 2 * (orig - nC)[1] -
+                        (orig - nC + widthstep)[1] + (orig + nC - widthstep)[1] + 2 * (orig + nC)[1] + (orig + nC + widthstep)[1]);
 
-            NonUniform(img2, img2.Copy(), mat2, 1);
+                    int r = Math.Abs((orig - widthstep - nC)[2] - (orig + widthstep - nC)[2] + 2 * (orig - widthstep)[2] - 2 * (orig + widthstep)[2] +
+                        (orig + nC - widthstep)[2] - (orig + nC + widthstep)[2]) + Math.Abs(-(orig - nC - widthstep)[2] - 2 * (orig - nC)[2] -
+                        (orig - nC + widthstep)[2] + (orig + nC - widthstep)[2] + 2 * (orig + nC)[2] + (orig + nC + widthstep)[2]);
 
-            SumPixels(img, img2);
+                    dest[0] = (byte)(b > 255 ? 255 : b);
+                    dest[1] = (byte)(g > 255 ? 255 : g);
+                    dest[2] = (byte)(r > 255 ? 255 : r);
+                }
+            }
+
+            //fazer bordas
+
+            //float[,] mat1 = { { 1, 0, -1 }, { 2, 0, -2 }, { 1, 0, -1 } };
+
+            //float[,] mat2 = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
         }
 
         /// <summary>
@@ -755,8 +811,8 @@ namespace SS_OpenCV
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
 
             //Calculates the filter's value for all pixels except bottom and right margins
             for (int y = 0; y < height - 1; y++)
@@ -825,14 +881,13 @@ namespace SS_OpenCV
         unsafe private static void SumPixels(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
         {
             MIplImage m1 = img1.MIplImage;
-            MIplImage m2 = img2.MIplImage;
             byte* dataPtr1 = (byte*)m1.imageData.ToPointer();
-            byte* dataPtr2 = (byte*)m2.imageData.ToPointer();
+            byte* dataPtr2 = (byte*)img2.MIplImage.imageData.ToPointer();
 
             int widthstep = m1.widthStep;
             int nC = m1.nChannels;
-            int width = img1.Width;
-            int height = img1.Height;
+            int width = m1.width;
+            int height = m1.height;
 
             for (int y = 0; y < height; y++)
             {
@@ -868,14 +923,13 @@ namespace SS_OpenCV
         unsafe public static void NonUniform(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float[,] mat, float weight)
         {
             MIplImage m = img.MIplImage;
-            MIplImage copy = imgCopy.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
 
             //calculates the central pixels' values
             for (int y = 1; y < height - 1; y++)
@@ -1056,14 +1110,13 @@ namespace SS_OpenCV
         unsafe public static void Roberts(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
             MIplImage m = img.MIplImage;
-            MIplImage copy = imgCopy.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
 
             int widthstep = m.widthStep;
             int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
+            int width = m.width;
+            int height = m.height;
 
             //Calculates the filter's value for all pixels except bottom and right margins
             for (int y = 0; y < height - 1; y++)
@@ -1170,15 +1223,54 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** TO DO ***
         /// Rotates an image using bilinear interpolation
         /// </summary>
         /// <param name="img">The image to rotate</param>
         /// <param name="imgCopy">A copy of the image</param>
         /// <param name="angle">The angle of rotation (in radians)</param>
-        public static void Rotation_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float angle)
+        unsafe public static void Rotation_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float angle)
         {
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
 
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = img.Width;
+            int height = img.Height;
+            double sine = Math.Sin(angle);
+            double cose = Math.Cos(angle);
+            int cx = width / 2;
+            int cy = height / 2;
+            int padding = widthstep - nC * width; // alignment bytes (padding)
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //inverse rotation: gets the original position of the pixel from the new pixel's coordinates
+                    double nx = (x - cx) * cose - (cy - y) * sine + cx;
+                    double ny = cy - (x - cx) * sine - (cy - y) * cose;
+
+                    if (ny >= 0 && ny < height && nx >= 0 && nx < width)
+                    {
+                        byte[] orig = BilinearInterpol(nx, ny, nC, m.widthStep, dataPtrCopy);
+                        dataPtr[0] = orig[0];
+                        dataPtr[1] = orig[1];
+                        dataPtr[2] = orig[2];
+                    }
+
+                    else //if we're trying to get pixels from outside the original image
+                    {
+                        dataPtr[0] = 0;
+                        dataPtr[1] = 0;
+                        dataPtr[2] = 0;
+                    }
+                    dataPtr += nC;
+
+                }
+                dataPtr += padding;
+            }
         }
 
         /// <summary>
@@ -1190,11 +1282,10 @@ namespace SS_OpenCV
         /// <param name="factor">Zoom factor</param>
         public static void Scale_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor)
         {
-            Scale_point_xy_Bilinear(img, imgCopy, factor, 0, 0);
+            Scale_point_xy_Bilinear(img, imgCopy, factor, img.Width, img.Height);
         }
 
         /// <summary>
-        /// *** TO DO ***
         /// Zooms in/out on an image, using bilinear interpolation.
         /// mouseX and mouseY determine the new top-left corner
         /// </summary>
@@ -1203,9 +1294,70 @@ namespace SS_OpenCV
         /// <param name="factor">Zoom factor</param>
         /// <param name="mouseX">Current X position of the mouse</param>
         /// <param name="mouseY">Current Y position of the mouse</param>
-        public static void Scale_point_xy_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor, int mouseX, int mouseY)
+        unsafe public static void Scale_point_xy_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor, int mouseX, int mouseY)
         {
+            if (factor == 1 || factor < 0) return;
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
 
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+            int cx = width / 2;
+            int cy = height / 2;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //Gets the original position of the pixel
+                    double nx = (x - cx) / factor + mouseX;
+                    double ny = (y - cy) / factor + mouseY;
+                    
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+
+                    if (ny >= 0 && ny < height && nx >= 0 && nx < width)
+                    {
+                        byte[] orig = BilinearInterpol(nx, ny, nC, widthstep, dataPtrCopy);
+                        dest[0] = orig[0];
+                        dest[1] = orig[1];
+                        dest[2] = orig[2];
+                    }
+
+                    else //if we're trying to get pixels from outside the original image
+                    {
+                        dest[0] = 0;
+                        dest[1] = 0;
+                        dest[2] = 0;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates bilinear interpolation based on 2 non-integer coordinates
+        /// </summary>
+        /// <param name="x">The X coordinate</param>
+        /// <param name="y">The Y coordinate</param>
+        /// <param name="nC">Number of channels of the image</param>
+        /// <param name="widthstep">Width-step of the image</param>
+        /// <param name="imagePtr">A pointer to the image content</param>
+        /// <returns>The result of bilinear interpolation using the given X and Y coordinates</returns>
+        unsafe private static byte[] BilinearInterpol(double x, double y, int nC, int widthstep, byte* imagePtr)
+        {
+            int lx = (int)x;
+            int uy = (int)y;
+            double xdec = x - lx;
+            double ydec = y - uy;
+            byte[] newBGR = new byte[3];
+            byte* luPtr = imagePtr + lx * nC + uy * widthstep, ruPtr = luPtr + nC;
+            byte* ldPtr = luPtr + widthstep, rdPtr = ruPtr + widthstep;
+            newBGR[0] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[0] + xdec * ruPtr[0]) + ydec * ((1 - xdec) * ldPtr[0] + xdec * rdPtr[0]));
+            newBGR[1] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[1] + xdec * ruPtr[1]) + ydec * ((1 - xdec) * ldPtr[1] + xdec * rdPtr[1]));
+            newBGR[2] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[2] + xdec * ruPtr[2]) + ydec * ((1 - xdec) * ldPtr[2] + xdec * rdPtr[2]));
+            return newBGR;
         }
     }
 }
