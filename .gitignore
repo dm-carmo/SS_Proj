@@ -278,3 +278,4 @@ __pycache__/
 
 # Cake - Uncomment if you are using it
 # tools/
+.vs/SS_OpenCV_2012/v14/.suo
