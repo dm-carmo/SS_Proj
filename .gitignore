@@ -1,4 +1,4 @@
-SS_OpenCV/bin/
+#>>>> SS_OpenCV/bin/
 SS_OpenCV/obj/
 
 
@@ -18,14 +18,14 @@ SS_OpenCV/obj/
 *.userprefs
 
 # Build results
-[Dd]ebug/
+#>>>> [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
 x64/
-x86/
+#>>>> x86/
 bld/
-[Bb]in/
+#>>>> [Bb]in/
 [Oo]bj/
 [Ll]og/
 
