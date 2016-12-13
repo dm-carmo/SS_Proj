@@ -1178,9 +1178,11 @@ namespace SS_OpenCV
 
             //só para testar
             Rectangle charLoc = new Rectangle(331, 190, 12, 22);
+            Rectangle charLoc2 = new Rectangle(346, 190, 13, 22);
 
             //só para testar
             LP_C1 = CharacterRecognition(imgCopy, charLoc, charList);
+            LP_C2 = CharacterRecognition(imgCopy, charLoc2, charList);
 
             LP_Location = new Rectangle();
             LP_Chr1 = new Rectangle();
@@ -1190,7 +1192,7 @@ namespace SS_OpenCV
             LP_Chr5 = new Rectangle();
             LP_Chr6 = new Rectangle();
             //LP_C1 = "";
-            LP_C2 = "";
+            //LP_C2 = "";
             LP_C3 = "";
             LP_C4 = "";
             LP_C5 = "";
@@ -1354,43 +1356,28 @@ namespace SS_OpenCV
             img.ROI = Rectangle.Empty;
             byte* charPtr = (byte*)charImg.MIplImage.imageData.ToPointer();
 
-            int width = charImg.Width;
-            int height = charImg.Height;
-
-            int halfwidth = width / 2;
-            int halfheight = height / 2;
-
             // aqui fica em b&w
             ConvertToBW_Otsu(charImg);
 
             // aqui tentamos reconhecer o caracter
             foreach(Image<Bgr, byte> i in charList.Values)
             {
-                int iwidth = i.Width;
-                int iheight = i.Height;
-
-                int ihalfwidth = iwidth / 2;
-                int ihalfheight = iheight / 2;
-                System.Diagnostics.Debug.Write("Current:");
-                System.Diagnostics.Debug.Write(s);
-                System.Diagnostics.Debug.Write(" ");
-                System.Diagnostics.Debug.WriteLine(perc);
+                //System.Diagnostics.Debug.WriteLine("Current: " + s + " " + perc);
                 char c = charList.FirstOrDefault(x => x.Value.Equals(i)).Key;
                 int charPixs = ExternalAsymmetry(charImg);
                 int iPixs = ExternalAsymmetry(i);
 
                 double simPerc = Math.Abs(charPixs - iPixs);
 
-                System.Diagnostics.Debug.Write("Test:");
-                System.Diagnostics.Debug.Write(c);
-                System.Diagnostics.Debug.Write(" ");
-                System.Diagnostics.Debug.WriteLine(simPerc);
+                //System.Diagnostics.Debug.WriteLine("Test: " + c + " " + simPerc);
                 if (simPerc < perc)
                 {
                     perc = simPerc;
                     s = c.ToString();
                 }
             }
+
+            System.Diagnostics.Debug.WriteLine("\nthis character is a " + s);
 
             return s;
         }
@@ -1402,32 +1389,92 @@ namespace SS_OpenCV
             int nC = m.nChannels;
             byte* imgPtr = (byte*)m.imageData.ToPointer();
             int width = m.width;
+            int halfwidth = (int)Math.Round(width / 2.0);
+            int height = m.height;
+            int halfheight = (int)Math.Round(height / 2.0);
+            int extAssym = 0;
+
+
+            for (int y = 0; y <= halfheight; y++)
+            {
+                int x, assym = 0;
+                for (x = 0; x < halfwidth; x++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) assym++;
+                    else break;
+                }
+
+                for (x = width - 1; x >= halfwidth; x--)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) assym--;
+                    else break;
+                }
+                extAssym += Math.Abs(assym);
+            }
+
+            return extAssym;
+        }
+
+        unsafe private static int InternalAsymmetry(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
             int halfwidth = width / 2;
             int height = m.height;
             int halfheight = height / 2;
-            int extAssym = 0;
+            int intAssym = 0;
 
 
             for (int y = 0; y < halfheight; y++)
             {
                 int x;
-                for (x = 0; x < halfwidth; x++)
+                for (x = halfwidth; x > 0; x--)
                 {
                     byte* pixel = imgPtr + y * widthstep + x * nC;
-                    if (pixel[0] != 0) extAssym++;
+                    if (pixel[0] == 255) intAssym++;
                     else break;
                 }
 
-                for (x = width - 1; x > halfwidth; x--)
+                for (x = halfwidth; x < width; x++)
                 {
                     byte* pixel = imgPtr + y * widthstep + x * nC;
-                    if (pixel[0] != 0) extAssym--;
+                    if (pixel[0] == 255) intAssym--;
                     else break;
                 }
-                if (extAssym < 0) extAssym *= -1;
+                if (intAssym < 0) intAssym *= -1;
             }
 
-            return extAssym * extAssym;
+            return intAssym;
+        }
+
+        unsafe private static int CharPerimeter(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
+            int height = m.height;
+
+            for(int y = 0; y < height; y++)
+            {
+                for(int x = 0; x < width; x++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    byte* pixelL = pixel - widthstep;
+                    byte* pixelR = pixel + widthstep;
+                    byte* pixelU = pixel - nC;
+                    byte* pixelD = pixel + nC;
+                    if ()
+                }
+            }
+
+            return 0;
         }
     }
 }

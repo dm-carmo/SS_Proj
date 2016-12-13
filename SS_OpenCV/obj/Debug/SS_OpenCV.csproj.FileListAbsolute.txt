@@ -118,7 +118,6 @@ C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.exe
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.csprojResolveAssemblyReference.cache
-C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\bin\Debug\SS_Eval.pdb
 C:\My Data\My Documents\FCT\SS\Práticas\SS_Proj\SS_OpenCV\bin\Debug\SS_OpenCV.exe.config
 C:\My Data\My Documents\FCT\SS\Práticas\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.exe
 C:\My Data\My Documents\FCT\SS\Práticas\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
