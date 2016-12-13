@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Emgu.CV.Structure;
 using Emgu.CV;
 using System.Drawing;
+using System.Collections.Generic;
 
 namespace SS_OpenCV
 {
@@ -873,47 +875,6 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// Adds the RGB values of pixels between two images.
-        /// Assumes they have the same width and height
-        /// </summary>
-        /// <param name="img1">The first image (we will modify this one)</param>
-        /// <param name="img2">The second image</param>
-        unsafe private static void SumPixels(Image<Bgr, byte> img1, Image<Bgr, byte> img2)
-        {
-            MIplImage m1 = img1.MIplImage;
-            byte* dataPtr1 = (byte*)m1.imageData.ToPointer();
-            byte* dataPtr2 = (byte*)img2.MIplImage.imageData.ToPointer();
-
-            int widthstep = m1.widthStep;
-            int nC = m1.nChannels;
-            int width = m1.width;
-            int height = m1.height;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    byte* orig = dataPtr1 + y * widthstep + x * nC;
-                    byte* sum = dataPtr2 + y * widthstep + x * nC;
-
-                    //gets the sum of each component
-                    int blue = (int)(orig[0] + sum[0]);
-                    int green = (int)(orig[1] + sum[1]);
-                    int red = (int)(orig[2] + sum[2]);
-
-                    if (blue > 255) blue = 255;
-                    if (green > 255) green = 255;
-                    if (red > 255) red = 255;
-
-                    // stores the new values in the image
-                    dataPtr1[0] = (byte)(blue);
-                    dataPtr1[1] = (byte)(green);
-                    dataPtr1[2] = (byte)(red);
-                }
-            }
-        }
-
-        /// <summary>
         /// *** ALMOST GOOD ***
         /// Performs a non-uniform filter on an image
         /// </summary>
@@ -1204,6 +1165,23 @@ namespace SS_OpenCV
             out string LP_C1, out string LP_C2, out string LP_C3, out string LP_C4, out string LP_C5, out string LP_C6,
             out string LP_Country, out string LP_Month, out string LP_Year)
         {
+
+            string path = "../../Resources/characters";
+            Dictionary<char, Image<Bgr, byte>> charList = new Dictionary<char, Image<Bgr, byte>>();
+            foreach(string file in Directory.EnumerateFiles(path))
+            {
+                char c = file.ElementAt(file.Length - 5);
+                Image<Bgr, byte> i = new Image<Bgr, byte>(file);
+                ConvertToBW_Otsu(i);
+                charList.Add(c, i);
+            }
+
+            //só para testar
+            Rectangle charLoc = new Rectangle(331, 190, 12, 22);
+
+            //só para testar
+            LP_C1 = CharacterRecognition(imgCopy, charLoc, charList);
+
             LP_Location = new Rectangle();
             LP_Chr1 = new Rectangle();
             LP_Chr2 = new Rectangle();
@@ -1211,7 +1189,7 @@ namespace SS_OpenCV
             LP_Chr4 = new Rectangle();
             LP_Chr5 = new Rectangle();
             LP_Chr6 = new Rectangle();
-            LP_C1 = "";
+            //LP_C1 = "";
             LP_C2 = "";
             LP_C3 = "";
             LP_C4 = "";
@@ -1358,6 +1336,98 @@ namespace SS_OpenCV
             newBGR[1] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[1] + xdec * ruPtr[1]) + ydec * ((1 - xdec) * ldPtr[1] + xdec * rdPtr[1]));
             newBGR[2] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[2] + xdec * ruPtr[2]) + ydec * ((1 - xdec) * ldPtr[2] + xdec * rdPtr[2]));
             return newBGR;
+        }
+
+        /// <summary>
+        /// Work in progress
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="charLoc">A rectangle representing the character's location</param>
+        /// <param name="charList">The list of characters for the recognition process</param>
+        /// <returns></returns>
+        unsafe private static string CharacterRecognition(Image<Bgr, byte> img, Rectangle charLoc, Dictionary<char, Image<Bgr, byte>> charList)
+        {
+            string s = "";
+            double perc = double.MaxValue;
+            img.ROI = charLoc;
+            Image<Bgr, byte> charImg = img.Copy();
+            img.ROI = Rectangle.Empty;
+            byte* charPtr = (byte*)charImg.MIplImage.imageData.ToPointer();
+
+            int width = charImg.Width;
+            int height = charImg.Height;
+
+            int halfwidth = width / 2;
+            int halfheight = height / 2;
+
+            // aqui fica em b&w
+            ConvertToBW_Otsu(charImg);
+
+            // aqui tentamos reconhecer o caracter
+            foreach(Image<Bgr, byte> i in charList.Values)
+            {
+                int iwidth = i.Width;
+                int iheight = i.Height;
+
+                int ihalfwidth = iwidth / 2;
+                int ihalfheight = iheight / 2;
+                System.Diagnostics.Debug.Write("Current:");
+                System.Diagnostics.Debug.Write(s);
+                System.Diagnostics.Debug.Write(" ");
+                System.Diagnostics.Debug.WriteLine(perc);
+                char c = charList.FirstOrDefault(x => x.Value.Equals(i)).Key;
+                int charPixs = ExternalAsymmetry(charImg);
+                int iPixs = ExternalAsymmetry(i);
+
+                double simPerc = Math.Abs(charPixs - iPixs);
+
+                System.Diagnostics.Debug.Write("Test:");
+                System.Diagnostics.Debug.Write(c);
+                System.Diagnostics.Debug.Write(" ");
+                System.Diagnostics.Debug.WriteLine(simPerc);
+                if (simPerc < perc)
+                {
+                    perc = simPerc;
+                    s = c.ToString();
+                }
+            }
+
+            return s;
+        }
+
+        unsafe private static int ExternalAsymmetry(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
+            int halfwidth = width / 2;
+            int height = m.height;
+            int halfheight = height / 2;
+            int extAssym = 0;
+
+
+            for (int y = 0; y < halfheight; y++)
+            {
+                int x;
+                for (x = 0; x < halfwidth; x++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] != 0) extAssym++;
+                    else break;
+                }
+
+                for (x = width - 1; x > halfwidth; x--)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] != 0) extAssym--;
+                    else break;
+                }
+                if (extAssym < 0) extAssym *= -1;
+            }
+
+            return extAssym * extAssym;
         }
     }
 }

@@ -519,6 +519,78 @@ namespace SS_OpenCV
             new HistogramForm(intensity).ShowDialog();
         }
 
+        private void robertsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            ImageClass.Roberts(img, img.Copy());
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void bilinearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            InputBox rot = new InputBox("Rotation Angle", numberTextBox);
+
+            rot.ShowDialog();
+            if (rot.DialogResult == DialogResult.OK)
+            {
+
+                int ang = Convert.ToInt32(rot.ValueTextBox.Text);
+                float rad = Convert.ToSingle(Math.PI / 180.0 * ang);
+
+                ImageClass.Rotation_Bilinear(img, img.Copy(), rad);
+
+                ImageViewer.Image = img.Bitmap;
+                ImageViewer.Refresh(); // refresh image on the screen
+            }
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void bilinearToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (img == null) // verify if the image is already opened
+                return;
+            Cursor = Cursors.Cross; // cross cursor 
+
+            //copy Undo Image
+            imgUndo = img.Copy();
+
+            InputBox zoom = new InputBox("Zoom Level", decimalTextBox);
+
+            mouseFlag = true;
+            while (mouseFlag) Application.DoEvents();
+
+            zoom.ShowDialog();
+
+            float factor = Convert.ToSingle(zoom.ValueTextBox.Text);
+
+            Cursor = Cursors.WaitCursor; // clock cursor 
+
+            ImageClass.Scale_point_xy_Bilinear(img, img.Copy(), factor, mouseX, mouseY);
+
+            ImageViewer.Image = img.Bitmap;
+            ImageViewer.Refresh(); // refresh image on the screen
+
+            Cursor = Cursors.Default; // normal cursor 
+        }
+
         private void decimalTextBox(object sender, KeyPressEventArgs e)
         {
             // allows 0-9, backspace, and decimal

@@ -105,6 +105,7 @@ C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\bin\Debug\SS_OpenCV.application
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\bin\Debug\SS_OpenCV.exe
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\bin\Debug\SS_OpenCV.pdb
+C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.csprojResolveAssemblyReference.cache
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.AuthorsForm.resources
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.DoubleInputBox.resources
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.HistogramForm.resources
@@ -117,5 +118,3 @@ C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.application
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.exe
 C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.pdb
-C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\obj\Debug\SS_OpenCV.csprojResolveAssemblyReference.cache
-C:\Users\David\Documents\Visual Studio 2015\Projects\SS_OpenCV\SS_Proj\SS_OpenCV\bin\Debug\SS_Eval.pdb

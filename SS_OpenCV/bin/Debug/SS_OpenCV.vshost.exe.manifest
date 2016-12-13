@@ -78,26 +78,26 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SS_Eval.dll" size="184320">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SS_Eval.dll" size="183808">
       <assemblyIdentity name="SS_Eval" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>1s4NIlgvJiHQgQSCTbP3/8Ad8U8=</dsig:DigestValue>
+        <dsig:DigestValue>MAXYyS12kVGZuNvkyvg2UbJVzkM=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SS_OpenCV.exe" size="61376">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SS_OpenCV.exe" size="64960">
       <assemblyIdentity name="SS_OpenCV" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>LubMo3FxbJZRzXJK24BzP2HGXr0=</dsig:DigestValue>
+        <dsig:DigestValue>fVMRCTj1cYhKDj+mxRslPYyuEo4=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
