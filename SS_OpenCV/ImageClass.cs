@@ -433,7 +433,7 @@ namespace SS_OpenCV
                     covar = res;
                 }
             }
-            ConvertToBW(img, threshold); //binarizes the image based on the chosen threshold
+            ConvertToBW(img, threshold - 1); //binarizes the image based on the chosen threshold
         }
 
         /// <summary>
@@ -459,7 +459,7 @@ namespace SS_OpenCV
                 {
                     byte* dest = dataPtr + y * widthstep + x * nC;
 
-                    if (dest[0] >= threshold)
+                    if (dest[0] > threshold)
                     {
                         dest[0] = dest[1] = dest[2] = 255;
                     }
@@ -1355,6 +1355,8 @@ namespace SS_OpenCV
             Image<Bgr, byte> charImg = img.Copy();
             img.ROI = Rectangle.Empty;
             byte* charPtr = (byte*)charImg.MIplImage.imageData.ToPointer();
+            Dictionary<char, int> counts = new Dictionary<char, int>();
+            Dictionary<char, int> assyms = new Dictionary<char, int>();
 
             // aqui fica em b&w
             ConvertToBW_Otsu(charImg);
@@ -1364,18 +1366,39 @@ namespace SS_OpenCV
             {
                 //System.Diagnostics.Debug.WriteLine("Current: " + s + " " + perc);
                 char c = charList.FirstOrDefault(x => x.Value.Equals(i)).Key;
-                int charPixs = ExternalAsymmetry(charImg);
-                int iPixs = ExternalAsymmetry(i);
 
-                double simPerc = Math.Abs(charPixs - iPixs);
+                int charCount = CountPixels(charImg);
+                int iCount = CountPixels(i);
+
+                int charAssym = ExternalAsymmetry(charImg);
+                int iAssym = ExternalAsymmetry(i);
+
+                int countDiff = Math.Abs(charCount - iCount);
+                int assymDiff = Math.Abs(charAssym - iAssym);
+
+                counts.Add(c, countDiff);
+                assyms.Add(c, assymDiff);
 
                 //System.Diagnostics.Debug.WriteLine("Test: " + c + " " + simPerc);
-                if (simPerc < perc)
-                {
-                    perc = simPerc;
-                    s = c.ToString();
-                }
+                //if (simPerc < perc)
+                //{
+                //   perc = simPerc;
+                //    s = c.ToString();
+                //}
             }
+
+            var countsOrd = counts.OrderBy(x => x.Value);
+            var assymsOrd = assyms.OrderBy(x => x.Value);
+            SortedList<char, int> list = new SortedList<char, int>();
+            foreach (char c in charList.Keys)
+            {
+                int i = countsOrd.TakeWhile(x => x.Key != c).Count() + assymsOrd.TakeWhile(x => x.Key != c).Count();
+                list.Add(c, i);
+            }
+
+            s = list.OrderBy(x => x.Value).First().Key.ToString();
+
+            //s = list.First().Value.ToString();
 
             System.Diagnostics.Debug.WriteLine("\nthis character is a " + s);
 
@@ -1452,7 +1475,7 @@ namespace SS_OpenCV
             return intAssym;
         }
 
-        unsafe private static int CharPerimeter(Image<Bgr, byte> img)
+        unsafe private static int CountPixels(Image<Bgr, byte> img)
         {
             MIplImage m = img.MIplImage;
             int widthstep = m.widthStep;
@@ -1460,21 +1483,18 @@ namespace SS_OpenCV
             byte* imgPtr = (byte*)m.imageData.ToPointer();
             int width = m.width;
             int height = m.height;
+            int count = 0;
 
             for(int y = 0; y < height; y++)
             {
                 for(int x = 0; x < width; x++)
                 {
                     byte* pixel = imgPtr + y * widthstep + x * nC;
-                    byte* pixelL = pixel - widthstep;
-                    byte* pixelR = pixel + widthstep;
-                    byte* pixelU = pixel - nC;
-                    byte* pixelD = pixel + nC;
-                    if ()
+                    if (pixel[0] == 0) count++;
                 }
             }
 
-            return 0;
+            return count;
         }
     }
 }
