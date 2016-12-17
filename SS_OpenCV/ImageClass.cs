@@ -1176,30 +1176,637 @@ namespace SS_OpenCV
                 charList.Add(c, i);
             }
 
-            //só para testar
-            Rectangle charLoc = new Rectangle(331, 190, 12, 22);
-            Rectangle charLoc2 = new Rectangle(346, 190, 13, 22);
+            LP_Location = Locate_License_Plate(img);
+            
+            Locate_LP_Chars(img.Copy(), LP_Location, out LP_Chr1, out LP_Chr2, out LP_Chr3, out LP_Chr4, out LP_Chr5, out LP_Chr6);
 
-            //só para testar
-            LP_C1 = CharacterRecognition(imgCopy, charLoc, charList);
-            LP_C2 = CharacterRecognition(imgCopy, charLoc2, charList);
-
-            LP_Location = new Rectangle();
-            LP_Chr1 = new Rectangle();
-            LP_Chr2 = new Rectangle();
-            LP_Chr3 = new Rectangle();
-            LP_Chr4 = new Rectangle();
-            LP_Chr5 = new Rectangle();
-            LP_Chr6 = new Rectangle();
-            //LP_C1 = "";
-            //LP_C2 = "";
-            LP_C3 = "";
-            LP_C4 = "";
-            LP_C5 = "";
-            LP_C6 = "";
+            LP_C1 = CharacterRecognition(imgCopy, LP_Chr1, charList);
+            LP_C2 = CharacterRecognition(imgCopy, LP_Chr2, charList);
+            LP_C3 = CharacterRecognition(imgCopy, LP_Chr3, charList);
+            LP_C4 = CharacterRecognition(imgCopy, LP_Chr4, charList);
+            LP_C5 = CharacterRecognition(imgCopy, LP_Chr5, charList);
+            LP_C6 = CharacterRecognition(imgCopy, LP_Chr6, charList);
             LP_Country = "";
             LP_Month = "";
             LP_Year = "";
+
+            //debug only (draw lines)
+            DebugDrawLines(img, LP_Location, LP_Chr1, LP_Chr2, LP_Chr3, LP_Chr4, LP_Chr5, LP_Chr6);
+        }
+
+        unsafe private static void DebugDrawLines(Image<Bgr, byte> img, Rectangle LP_Location, Rectangle LP_C1, Rectangle LP_C2, Rectangle LP_C3, Rectangle LP_C4, Rectangle LP_C5, Rectangle LP_C6)
+        {
+            MIplImage m = img.MIplImage;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+
+            //LP_Location
+            for (int y = LP_Location.Top; y < LP_Location.Bottom; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + LP_Location.Left * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + (LP_Location.Right - 1) * nC;
+                pixelPtr[1] = 255;
+            }
+            for (int x = LP_Location.Left; x < LP_Location.Right; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + LP_Location.Top * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + (LP_Location.Bottom - 1) * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }
+            //LP_C1
+            for (int y = LP_C1.Top; y < LP_C1.Bottom; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + LP_C1.Left * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + (LP_C1.Right - 1) * nC;
+                pixelPtr[1] = 255;
+            }
+            for (int x = LP_C1.Left; x < LP_C1.Right; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + LP_C1.Top * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + (LP_C1.Bottom - 1) * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }
+            //LP_C2
+            for (int y = LP_C2.Top; y < LP_C2.Bottom; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + LP_C2.Left * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + (LP_C2.Right - 1) * nC;
+                pixelPtr[1] = 255;
+            }
+            for (int x = LP_C2.Left; x < LP_C2.Right; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + LP_C2.Top * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + (LP_C2.Bottom - 1) * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }
+            //LP_C3
+            for (int y = LP_C3.Top; y < LP_C3.Bottom; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + LP_C3.Left * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + (LP_C3.Right - 1) * nC;
+                pixelPtr[1] = 255;
+            }
+            for (int x = LP_C3.Left; x < LP_C3.Right; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + LP_C3.Top * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + (LP_C3.Bottom - 1) * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }
+            //LP_C4
+            for (int y = LP_C4.Top; y < LP_C4.Bottom; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + LP_C4.Left * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + (LP_C4.Right - 1) * nC;
+                pixelPtr[1] = 255;
+            }
+            for (int x = LP_C4.Left; x < LP_C4.Right; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + LP_C4.Top * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + (LP_C4.Bottom - 1) * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }
+            //LP_C5
+            for (int y = LP_C5.Top; y < LP_C5.Bottom; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + LP_C5.Left * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + (LP_C5.Right - 1) * nC;
+                pixelPtr[1] = 255;
+            }
+            for (int x = LP_C5.Left; x < LP_C5.Right; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + LP_C5.Top * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + (LP_C5.Bottom - 1) * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }
+            //LP_C6
+            for (int y = LP_C6.Top; y < LP_C6.Bottom; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + LP_C6.Left * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + (LP_C6.Right - 1) * nC;
+                pixelPtr[1] = 255;
+            }
+            for (int x = LP_C6.Left; x < LP_C6.Right; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + LP_C6.Top * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + (LP_C6.Bottom - 1) * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }
+        }
+
+        /// <summary>
+        /// *** Not great ***
+        /// Locates a license plate
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <returns>The location of the license plate</returns>
+        unsafe private static Rectangle Locate_License_Plate(Image<Bgr, byte> img)
+        {
+            int upperLimit, lowerLimit, leftLimit, rightLimit;
+            LocateLPVertical(img.Copy(), out upperLimit, out lowerLimit); //get upper & lower limits
+            LocateLPLeft(img.Copy(), upperLimit, lowerLimit, out leftLimit); //get left limit
+            LocateLPRight(img.Copy(), upperLimit, lowerLimit, leftLimit, out rightLimit); //get right limit
+
+            /*//Debug (print lines in image)
+            MIplImage m = img.MIplImage;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+            for (int y = upperLimit; y <= lowerLimit; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + leftLimit * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + rightLimit * nC;
+                pixelPtr[1] = 255;
+            }
+            for (int x = leftLimit; x <= rightLimit; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + upperLimit * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + lowerLimit * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }*/
+
+            return new Rectangle(leftLimit, upperLimit, (rightLimit-leftLimit), (lowerLimit-upperLimit));
+        }
+
+        /// <summary>
+        /// Locate upper and lower limits of the license plate
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="upperLimit">License plate upper limit</param>
+        /// <param name="lowerLimit">License plate lower limit</param>
+        unsafe private static void LocateLPVertical(Image<Bgr, byte> img, out int upperLimit, out int lowerLimit)
+        {
+            //Preprocess image
+            float[,] gauss = {{1, 2, 1 },{ 2, 4, 2 },{ 1, 2, 1 }};
+            NonUniform(img, img.Copy(), gauss, 16); //noise reduction
+            NonUniform(img, img.Copy(), gauss, 16); //noise reduction
+            NonUniform(img, img.Copy(), gauss, 16); //noise reduction
+            AvgChannel(img); //convert to grayscale
+            Roberts(img, img.Copy()); //edge detection
+            ConvertToBW(img, 50); //binarization
+
+            MIplImage m = img.MIplImage;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+
+            //Determine row with highest amplitude
+            int[] sfr = new int[height];
+            int maxRow = 0;
+            for (int y = 0; y < height; y++)
+            {
+                sfr[y] = 0;
+                for (int x = 2; x < width - 2; x++)
+                {
+                    byte* pixelPtr = imgPtr + y * widthstep + x * nC;
+                    byte* pixelPtrPrev = imgPtr + y * widthstep + (x - 1) * nC;
+                    if ((pixelPtrPrev[0] > 128 && pixelPtr[0] < 128) || (pixelPtrPrev[0] < 128 && pixelPtr[0] > 128))
+                    {
+                        sfr[y]++; //color switched. edge found
+                    }
+                }
+                if (sfr[y] > sfr[maxRow])
+                {
+                    maxRow = y; //new max found
+                }
+            }
+
+            /*//Debug (Print sfr histogram)
+            Console.WriteLine("max: sfr[" + maxRow + "]" + sfr[maxRow]);
+            new HistogramForm(sfr).ShowDialog();*/
+
+            int halfMaxValue = sfr[maxRow]/2; //half of the maximal value
+            //Search upper limit
+            upperLimit = 0;
+            for (int y = maxRow; y >= 0; y--)
+            {
+                if (sfr[y] == halfMaxValue || (sfr[y] > halfMaxValue - (halfMaxValue/2)) && (sfr[y] < halfMaxValue))
+                {
+                    upperLimit = y - 3; //upper limit found
+                    break;
+                }
+            }
+            //Search lower limit
+            lowerLimit = height -1;
+            for (int y = maxRow; y < height; y++)
+            {
+                if (sfr[y] == halfMaxValue || (sfr[y] > halfMaxValue - (halfMaxValue / 2)) && (sfr[y] < halfMaxValue))
+                {
+                    lowerLimit = y + 3; //lower limit found
+                    break;
+                }
+            }
+            
+            /*//Debug (Print lines in image)
+            for (int x = 0; x < width; x++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + upperLimit * widthstep + x * nC;
+                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + maxRow * widthstep + x * nC;
+                pixelPtr[2] = 255;
+                pixelPtr = imgPtr + lowerLimit * widthstep + x * nC;
+                pixelPtr[1] = 255;
+            }*/
+        }
+
+        /// <summary>
+        /// Locate left limit of the license plate
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="upperLimit">License plate upper limit</param>
+        /// <param name="lowerLimit">License plate lower limit</param>
+        /// <param name="leftLimit">License plate left limit</param>
+        unsafe private static void LocateLPLeft(Image<Bgr, byte> img, int upperLimit, int lowerLimit, out int leftLimit)
+        {
+            //Preprocess image
+            EnhanceBlue(img);
+
+            MIplImage m = img.MIplImage;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+
+            //Determine column with highest amplitude
+            int[] sfc = new int[width];
+            int maxColumn = 0;
+            for (int x = 0; x < width; x++)
+            {
+                sfc[x] = 0;
+                for (int y = upperLimit; y < lowerLimit; y++)
+                {
+                    byte* pixelPtr = imgPtr + y * widthstep + x * nC;
+                    if (pixelPtr[0] == 255)
+                    {
+                        sfc[x]++;
+                    }
+                }
+                if (sfc[x] > sfc[maxColumn])
+                {
+                    maxColumn = x; //new max found
+                }
+            }
+
+            /*//Debug (print sfc histogram)
+            Console.WriteLine("max: sfc[" + maxColumn + "]" + sfc[maxColumn]);
+            new HistogramForm(sfc).ShowDialog();*/
+
+            //Search left limit
+            leftLimit = 0;
+            for (int x = maxColumn; x < width; x++)
+            {
+                if (sfc[x] == 0){ leftLimit = x; break; }
+            }
+
+            /*//Debug (Print lines in image)
+            for (int y = 0; y < height; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + maxColumn * nC;
+                pixelPtr[2] = 255;
+                pixelPtr = imgPtr + y * widthstep + leftLimit * nC;
+                pixelPtr[1] = 255;
+            }*/
+        }
+
+        unsafe private static void EnhanceBlue(Image<Bgr, byte> img)
+        {
+            // direct access to the image memory(sequencial)
+            // direction top left -> bottom right
+
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte gray;
+
+            int width = m.width;
+            int height = m.height;
+            int nChan = m.nChannels; // number of channels - 3
+            int padding = m.widthStep - nChan * width; // alignment bytes (padding)
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //gets the 3 components
+                    byte blue = dataPtr[0];
+                    byte green = dataPtr[1];
+                    byte red = dataPtr[2];
+
+                    // convert to gray
+                    if (red + green > blue) { gray = 0; } else { gray = 255; };
+
+                    // stores the new values in the image
+                    dataPtr[0] = dataPtr[1] = dataPtr[2] = gray;
+
+                    // moves the pointer to the next pixel
+                    dataPtr += nChan;
+                }
+
+                //at the end of the line moves the pointer by the alignment bytes (padding)
+                dataPtr += padding;
+            }
+
+        }
+
+        /// <summary>
+        /// Locate right limit of the license plate
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="upperLimit">License plate upper limit</param>
+        /// <param name="lowerLimit">License plate lower limit</param>
+        /// <param name="leftLimit">License plate left limit</param>
+        /// <param name="rightLimit">License plate right limit</param>
+        unsafe private static void LocateLPRight(Image<Bgr, byte> img, int upperLimit, int lowerLimit, int leftLimit, out int rightLimit)
+        {
+            //Preprocess image
+            ConvertToBW_Otsu(img);
+
+            MIplImage m = img.MIplImage;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+
+            //Determine column with highest amplitude
+            int[] sfc = new int[width];
+            for (int x = leftLimit; x < width; x++)
+            {
+                sfc[x] = 0;
+                for (int y = upperLimit; y < lowerLimit; y++)
+                {
+                    byte* pixelPtr = imgPtr + y * widthstep + x * nC;
+                    if (pixelPtr[0] == 255)
+                    {
+                        sfc[x]++;
+                    }
+                }
+            }
+
+            /*//Debug (print sfc histogram)
+            new HistogramForm(sfc).ShowDialog();*/
+
+            //Search right limit
+            rightLimit = 0;
+            for (int x = leftLimit; x < width; x++)
+            {
+                if (sfc[x] == 0) { rightLimit = x; break; }
+            }
+
+            /*//Debug (Print lines in image)
+            for (int y = 0; y < height; y++)
+            {
+                byte* pixelPtr;
+                pixelPtr = imgPtr + y * widthstep + leftLimit * nC;
+                pixelPtr[0] = 255;
+                pixelPtr = imgPtr + y * widthstep + rightLimit * nC;
+                pixelPtr[1] = 255;
+            }*/
+        }
+
+        /// <summary>
+        /// *** Not great ***
+        /// Locates the license plate characters
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="LP_Location">The license plate location</param>
+        /// <param name="LP_Chr1">Location of character 1</param>
+        /// <param name="LP_Chr2">Location of character 2</param>
+        /// <param name="LP_Chr3">Location of character 3</param>
+        /// <param name="LP_Chr4">Location of character 4</param>
+        /// <param name="LP_Chr5">Location of character 5</param>
+        /// <param name="LP_Chr6">Location of character 6</param>
+        unsafe private static void Locate_LP_Chars(Image<Bgr, byte> img, Rectangle LP_Location, out Rectangle LP_Chr1, out Rectangle LP_Chr2, out Rectangle LP_Chr3, out Rectangle LP_Chr4, out Rectangle LP_Chr5, out Rectangle LP_Chr6)
+        {
+            int upperLimit = LP_Location.Top;
+            int lowerLimit = LP_Location.Bottom;
+            int leftLimit = LP_Location.Left;
+            int rightLimit = LP_Location.Right;
+            int width = LP_Location.Width;
+            int height = LP_Location.Height;
+
+            //Preprocess image
+            ConvertToBW_Otsu(img);
+
+            MIplImage m = img.MIplImage;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+
+            // Determine column with highest amplitude
+            int[] sfc = new int[width];
+            int min = 255;
+            for (int x = 0; x < width; x++)
+            {
+                sfc[x] = 0;
+                for (int y = 0; y < height; y++)
+                {
+                    byte* pixelPtr = imgPtr + (y+upperLimit) * widthstep + (x+leftLimit) * nC;
+                    if (pixelPtr[0] == 0)
+                    {
+                        sfc[x]++;
+                    }
+                }
+                if (sfc[x] < min && sfc[x] != 0)
+                {
+                    min = sfc[x]; //new max found
+                }
+            }
+
+            //Crop lower levels in order to separate chars
+            for (int i = 0; i < sfc.Length; i++)
+            {
+                if (sfc[i] < (min * 2)) { sfc[i] = 0; }
+            }
+
+            //Find objects along x axis
+            int start = -1;
+            int length = 0;
+            int objCount = 0;
+            Rectangle[] charLocations = new Rectangle[6];
+            for (int i = 0; i < sfc.Length; i++)
+            {
+                if (start == -1 && sfc[i] != 0)
+                {
+                    //new object found
+                    start = i;
+                    length++;
+                } else if (start != -1) {
+                    if (sfc[i] != 0)
+                    {
+                        //inside object
+                        length++;
+                    } else {
+                        //outside object
+                        if (length > 5) {
+                            //object was large enough. don't discard
+                            int charX, charY, charHeight;
+                            charX = start + leftLimit;
+                            TrimCharArea(img, upperLimit, lowerLimit, charX, out charY, length, out charHeight); //trim top and bottom to only show char
+                            charLocations[objCount++] = new Rectangle(charX, charY, length, charHeight); //create char rectangle
+                        }
+                        //reset
+                        start = -1;
+                        length = 0;
+                        if (objCount == 6){
+                            break; //only looking for 6 chars
+                        }
+                    }
+                }
+            }
+            if (start != -1 && objCount < 6)
+            {
+                //did not finish, now outside object
+                if (length > 5)
+                {
+                    //object was large enough. don't discard
+                    int charX, charY, charHeight;
+                    charX = start + leftLimit;
+                    TrimCharArea(img, upperLimit, lowerLimit, charX, out charY, length, out charHeight); //trim top and bottom to only show char
+                    charLocations[objCount++] = new Rectangle(charX, charY, length, charHeight); //create char rectangle
+                }
+            }
+
+            /*//Debug (print sfc histogram)
+            new HistogramForm(sfc).ShowDialog();*/
+
+            //Assign rectangles
+            LP_Chr1 = charLocations[0];
+            LP_Chr2 = charLocations[1];
+            LP_Chr3 = charLocations[2];
+            LP_Chr4 = charLocations[3];
+            LP_Chr5 = charLocations[4];
+            LP_Chr6 = charLocations[5];
+        }
+
+        /// <summary>
+        /// Trim the top and bottom section where a character is located 
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="LP_UpperLimit">License plate upper limit</param>
+        /// <param name="LP_LowerLimit">License plate lower limit</param>
+        /// <param name="charX">Character top-left corner x coord</param>
+        /// <param name="charY">Character top-left corner y coord</param>
+        /// <param name="charWidth">Character width</param>
+        /// <param name="charHeight">Character height</param>
+        unsafe private static void TrimCharArea(Image<Bgr, byte> img, int LP_UpperLimit, int LP_LowerLimit, int charX, out int charY, int charWidth, out int charHeight)
+        {
+            MIplImage m = img.MIplImage;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+
+            //Determine row with highest amplitude
+            int[] sfr = new int[LP_LowerLimit - LP_UpperLimit];
+            for (int y = 0; y < sfr.Length; y++)
+            {
+                sfr[y] = 0;
+                for (int x = 0; x < charWidth; x++)
+                {
+                    byte* pixelPtr = imgPtr + (y+LP_UpperLimit) * widthstep + (x+charX) * nC;
+                    if (pixelPtr[0] == 0)
+                    {
+                        sfr[y]++;
+                    }
+                }
+            }
+
+            /*//Debug (print sfc histogram)
+            new HistogramForm(sfr).ShowDialog();*/
+
+            //Find object along y axis
+            charY = LP_UpperLimit;
+            charHeight = LP_LowerLimit - LP_UpperLimit;
+            int start = -1;
+            int length = 0;
+            bool found = false;
+            for (int i = 0; i < sfr.Length; i++)
+            {
+                if (start == -1 && sfr[i] != 0)
+                {
+                    //new object found
+                    start = i;
+                    length++;
+                }
+                else if (start != -1)
+                {
+                    if (sfr[i] != 0)
+                    {
+                        //inside object
+                        length++;
+                    }
+                    else
+                    {
+                        //outside object
+                        if (length > 5)
+                        {
+                            //object was large enough. don't discard
+                            charY = start + LP_UpperLimit;
+                            charHeight = length;
+                            found = true;
+                            break; //only looking for 1 char
+                        }
+                        //reset
+                        start = -1;
+                        length = 0;
+                    }
+                }
+            }
+            if (start != -1 && !found)
+            {
+                //did not finish, now outside object
+                if (length > 5)
+                {
+                    //object was large enough. don't discard
+                    charY = start + LP_UpperLimit;
+                    charHeight = length;
+                    found = true;
+                }
+            }
+
+            Console.WriteLine("Char @ ("+charX+","+charY+ ") with width (" + charWidth+") and height (" + charHeight + ")");
         }
 
         /// <summary>
@@ -1357,6 +1964,13 @@ namespace SS_OpenCV
             byte* charPtr = (byte*)charImg.MIplImage.imageData.ToPointer();
             Dictionary<char, int> counts = new Dictionary<char, int>();
             Dictionary<char, int> assyms = new Dictionary<char, int>();
+            Dictionary<char, int> assymsExternalLower = new Dictionary<char, int>();
+            Dictionary<char, int> assymsInternal = new Dictionary<char, int>();
+            Dictionary<char, int> assymsInternalLower = new Dictionary<char, int>();
+            Dictionary<char, int> assymsVertical = new Dictionary<char, int>();
+            Dictionary<char, int> assymsExternalVerticalLower = new Dictionary<char, int>();
+            Dictionary<char, int> assymsInternalVertical = new Dictionary<char, int>();
+            Dictionary<char, int> assymsInternalVerticalLower = new Dictionary<char, int>();
 
             // aqui fica em b&w
             ConvertToBW_Otsu(charImg);
@@ -1373,11 +1987,46 @@ namespace SS_OpenCV
                 int charAssym = ExternalAsymmetry(charImg);
                 int iAssym = ExternalAsymmetry(i);
 
+                int charAssymExternalLower = ExternalLowerAsymmetry(charImg);
+                int iAssymExternalLower = ExternalLowerAsymmetry(i);
+
+                int charAssymInternal = InternalAsymmetry(charImg);
+                int iAssymInternal = InternalAsymmetry(i);
+
+                int charAssymInternalLower = InternalLowerAsymmetry(charImg);
+                int iAssymInternalLower = InternalLowerAsymmetry(i);
+
+                int charAssymVertical = ExternalVerticalAsymmetry(charImg);
+                int iAssymVertical = ExternalVerticalAsymmetry(i);
+
+                int charAssymExternalVerticalLower = ExternalLowerVerticalAsymmetry(charImg);
+                int iAssymExternalVerticalLower = ExternalLowerVerticalAsymmetry(i);
+
+                int charAssymInternalVertical = InternalVerticalAsymmetry(charImg);
+                int iAssymInternalVertical = InternalVerticalAsymmetry(i);
+
+                int charAssymInternalLowerVertical = InternalLowerVerticalAsymmetry(charImg);
+                int iAssymInternalLowerVertical = InternalLowerVerticalAsymmetry(i);
+
                 int countDiff = Math.Abs(charCount - iCount);
                 int assymDiff = Math.Abs(charAssym - iAssym);
+                int assymExternalLowerDiff = Math.Abs(charAssymExternalLower - iAssymExternalLower);
+                int assymInternalDiff = Math.Abs(charAssymInternal - iAssymInternal);
+                int assymInternalLowerDiff = Math.Abs(charAssymInternalLower - iAssymInternalLower);
+                int assymDiffVertical = Math.Abs(charAssymVertical - iAssymVertical);
+                int assymExternalLowerVerticalDiff = Math.Abs(charAssymExternalVerticalLower - iAssymExternalVerticalLower);
+                int assymInternalVerticalDiff = Math.Abs(charAssymInternalVertical - iAssymInternalVertical);
+                int assymInternalLowerVerticalDiff = Math.Abs(charAssymInternalLowerVertical - iAssymInternalLowerVertical);
 
                 counts.Add(c, countDiff);
                 assyms.Add(c, assymDiff);
+                assymsExternalLower.Add(c, assymExternalLowerDiff);
+                assymsInternal.Add(c, assymInternalDiff);
+                assymsInternalLower.Add(c, assymInternalLowerDiff);
+                assymsVertical.Add(c, assymDiffVertical);
+                assymsExternalVerticalLower.Add(c, assymExternalLowerVerticalDiff);
+                assymsInternalVertical.Add(c, assymInternalVerticalDiff);
+                assymsInternalVerticalLower.Add(c, assymInternalLowerVerticalDiff);
 
                 //System.Diagnostics.Debug.WriteLine("Test: " + c + " " + simPerc);
                 //if (simPerc < perc)
@@ -1389,10 +2038,21 @@ namespace SS_OpenCV
 
             var countsOrd = counts.OrderBy(x => x.Value);
             var assymsOrd = assyms.OrderBy(x => x.Value);
+            var assymsExternalLowerOrd = assymsExternalLower.OrderBy(x => x.Value);
+            var assymsInternalOrd = assymsInternal.OrderBy(x => x.Value);
+            var assymsInternalLowerOrd = assymsInternalLower.OrderBy(x => x.Value);
+            var assymsVerticalOrd = assymsVertical.OrderBy(x => x.Value);
+            var assymsExternalLowerVerticalOrd = assymsExternalVerticalLower.OrderBy(x => x.Value);
+            var assymsInternalVerticalOrd = assymsInternalVertical.OrderBy(x => x.Value);
+            var assymsInternalLowerVerticalOrd = assymsInternalVerticalLower.OrderBy(x => x.Value);
             SortedList<char, int> list = new SortedList<char, int>();
             foreach (char c in charList.Keys)
             {
-                int i = countsOrd.TakeWhile(x => x.Key != c).Count() + assymsOrd.TakeWhile(x => x.Key != c).Count();
+                int i = countsOrd.TakeWhile(x => x.Key != c).Count() + assymsOrd.TakeWhile(x => x.Key != c).Count()
+                    + assymsExternalLowerOrd.TakeWhile(x => x.Key != c).Count() + assymsInternalOrd.TakeWhile(x => x.Key != c).Count()
+                     + assymsInternalLowerOrd.TakeWhile(x => x.Key != c).Count() + assymsVerticalOrd.TakeWhile(x => x.Key != c).Count()
+                    + assymsExternalLowerVerticalOrd.TakeWhile(x => x.Key != c).Count() + assymsInternalVerticalOrd.TakeWhile(x => x.Key != c).Count()
+                     + assymsInternalLowerVerticalOrd.TakeWhile(x => x.Key != c).Count();
                 list.Add(c, i);
             }
 
@@ -1400,7 +2060,7 @@ namespace SS_OpenCV
 
             //s = list.First().Value.ToString();
 
-            System.Diagnostics.Debug.WriteLine("\nthis character is a " + s);
+            Console.WriteLine("\nthis character is a " + s);
 
             return s;
         }
@@ -1418,7 +2078,42 @@ namespace SS_OpenCV
             int extAssym = 0;
 
 
-            for (int y = 0; y <= halfheight; y++)
+            for (int y = 0; y < halfheight; y++)
+            {
+                int x, assym = 0;
+                for (x = 0; x < halfwidth; x++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) assym++;
+                    else break;
+                }
+
+                for (x = width - 1; x >= halfwidth; x--)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) assym--;
+                    else break;
+                }
+                extAssym += Math.Abs(assym);
+            }
+
+            return extAssym;
+        }
+
+        unsafe private static int ExternalLowerAsymmetry(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
+            int halfwidth = (int)Math.Round(width / 2.0);
+            int height = m.height;
+            int halfheight = (int)Math.Round(height / 2.0);
+            int extAssym = 0;
+
+
+            for (int y = halfheight; y < height; y++)
             {
                 int x, assym = 0;
                 for (x = 0; x < halfwidth; x++)
@@ -1475,6 +2170,181 @@ namespace SS_OpenCV
             return intAssym;
         }
 
+        unsafe private static int InternalLowerAsymmetry(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
+            int halfwidth = width / 2;
+            int height = m.height;
+            int halfheight = height / 2;
+            int intAssym = 0;
+
+
+            for (int y = halfheight; y < height; y++)
+            {
+                int x;
+                for (x = halfwidth; x > 0; x--)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) intAssym++;
+                    else break;
+                }
+
+                for (x = halfwidth; x < width; x++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) intAssym--;
+                    else break;
+                }
+                if (intAssym < 0) intAssym *= -1;
+            }
+
+            return intAssym;
+        }
+
+        unsafe private static int ExternalVerticalAsymmetry(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
+            int halfwidth = (int)Math.Round(width / 2.0);
+            int height = m.height;
+            int halfheight = (int)Math.Round(height / 2.0);
+            int extAssym = 0;
+
+
+            for (int x = 0; x < halfwidth; x++)
+            {
+                int y, assym = 0;
+                for (y = 0; y < halfheight; y++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) assym++;
+                    else break;
+                }
+
+                for (y = height - 1; y >= halfheight; y--)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) assym--;
+                    else break;
+                }
+                extAssym += Math.Abs(assym);
+            }
+
+            return extAssym;
+        }
+
+        unsafe private static int ExternalLowerVerticalAsymmetry(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
+            int halfwidth = (int)Math.Round(width / 2.0);
+            int height = m.height;
+            int halfheight = (int)Math.Round(height / 2.0);
+            int extAssym = 0;
+
+
+            for (int x = halfwidth; x < width; x++)
+            {
+                int y, assym = 0;
+                for (y = 0; y < halfheight; y++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) assym++;
+                    else break;
+                }
+
+                for (y = height - 1; y >= halfheight; y--)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) assym--;
+                    else break;
+                }
+                extAssym += Math.Abs(assym);
+            }
+
+            return extAssym;
+        }
+
+        unsafe private static int InternalVerticalAsymmetry(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
+            int halfwidth = width / 2;
+            int height = m.height;
+            int halfheight = height / 2;
+            int intAssym = 0;
+
+
+            for (int x = 0; x < halfwidth; x++)
+            {
+                int y;
+                for (y = halfheight; y > 0; y--)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) intAssym++;
+                    else break;
+                }
+
+                for (y = halfheight; y < height; y++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) intAssym--;
+                    else break;
+                }
+                if (intAssym < 0) intAssym *= -1;
+            }
+
+            return intAssym;
+        }
+
+        unsafe private static int InternalLowerVerticalAsymmetry(Image<Bgr, byte> img)
+        {
+            MIplImage m = img.MIplImage;
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            byte* imgPtr = (byte*)m.imageData.ToPointer();
+            int width = m.width;
+            int halfwidth = width / 2;
+            int height = m.height;
+            int halfheight = height / 2;
+            int intAssym = 0;
+
+
+            for (int x = halfwidth; x < width; x++)
+            {
+                int y;
+                for (y = halfheight; y > 0; y--)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) intAssym++;
+                    else break;
+                }
+
+                for (y = halfheight; y < height; y++)
+                {
+                    byte* pixel = imgPtr + y * widthstep + x * nC;
+                    if (pixel[0] == 255) intAssym--;
+                    else break;
+                }
+                if (intAssym < 0) intAssym *= -1;
+            }
+
+            return intAssym;
+        }
+
         unsafe private static int CountPixels(Image<Bgr, byte> img)
         {
             MIplImage m = img.MIplImage;
@@ -1498,3 +2368,5 @@ namespace SS_OpenCV
         }
     }
 }
+ 
+ 
