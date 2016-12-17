@@ -7,8 +7,8 @@ namespace SS_OpenCV
 {
     public partial class MainForm : Form
     {
-        Image<Bgr, Byte> img = null; // working image
-        Image<Bgr, Byte> imgUndo = null; // undo backup image - UNDO
+        Image<Bgr, byte> img = null; // working image
+        Image<Bgr, byte> imgUndo = null; // undo backup image - UNDO
         string title_bak = "";
 
         public MainForm()
@@ -104,8 +104,7 @@ namespace SS_OpenCV
         /// <param name="e"></param>
         private void autoresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AuthorsForm form = new AuthorsForm();
-            form.ShowDialog();
+            new AuthorsForm().ShowDialog();
         }
 
 
@@ -253,9 +252,8 @@ namespace SS_OpenCV
             DoubleInputBox dib = new DoubleInputBox("X Translation:", "Y Translation:", "Translation", numberTextBox, numberTextBox);
             dib.ShowDialog();
 
-            int dx, dy;
-            dx = Convert.ToInt32(dib.textBox1.Text);
-            dy = Convert.ToInt32(dib.textBox2.Text);
+            int dx = Convert.ToInt32(dib.textBox1.Text);
+            int dy = Convert.ToInt32(dib.textBox2.Text);
 
             if (dib.DialogResult == DialogResult.OK)
             {
@@ -293,20 +291,6 @@ namespace SS_OpenCV
             }
 
             Cursor = Cursors.Default; // normal cursor 
-        }
-
-        int mouseX, mouseY;
-        bool mouseFlag = false;
-
-        private void ImageViewer_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (mouseFlag)
-            {
-                mouseX = e.X;
-                mouseY = e.Y;
-
-                mouseFlag = false;
-            }
         }
 
         private void x3ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -461,6 +445,20 @@ namespace SS_OpenCV
             Cursor = Cursors.Default; // normal cursor 
         }
 
+        int mouseX, mouseY;
+        bool mouseFlag = false;
+
+        private void ImageViewer_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (mouseFlag)
+            {
+                mouseX = e.X;
+                mouseY = e.Y;
+
+                mouseFlag = false;
+            }
+        }
+
         private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (img == null) // verify if the image is already opened
@@ -487,11 +485,6 @@ namespace SS_OpenCV
             ImageViewer.Refresh(); // refresh image on the screen
 
             Cursor = Cursors.Default; // normal cursor 
-        }
-
-        private void numberTextBox(object sender, KeyPressEventArgs e)
-        {
-            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
         private void evalFormToolStripMenuItem_Click(object sender, EventArgs e)
@@ -589,6 +582,11 @@ namespace SS_OpenCV
             ImageViewer.Refresh(); // refresh image on the screen
 
             Cursor = Cursors.Default; // normal cursor 
+        }
+
+        private void numberTextBox(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
         private void decimalTextBox(object sender, KeyPressEventArgs e)
