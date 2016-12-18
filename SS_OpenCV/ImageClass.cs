@@ -3077,110 +3077,120 @@ namespace SS_OpenCV
             int width = m.width;
             int height = m.height;
 
+            //Copy binarized license plate
+            Image<Bgr, byte> copy = img.Copy();
+            ConvertToBW_Otsu(copy);
+            copy.ROI = LP_Location;
+            img.ROI = LP_Location;
+            CvInvoke.cvCopy(copy, img, IntPtr.Zero);
+            img.ROI = Rectangle.Empty;
+
+            //Draw lines
+            byte* pixelPtr;
             //LP_Location
             for (int y = LP_Location.Top; y < LP_Location.Bottom; y++)
             {
-                byte* pixelPtr = imgPtr + y * widthstep + LP_Location.Left * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + LP_Location.Left * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + y * widthstep + (LP_Location.Right - 1) * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             for (int x = LP_Location.Left; x < LP_Location.Right; x++)
             {
-                byte* pixelPtr = imgPtr + LP_Location.Top * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + LP_Location.Top * widthstep + x * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + (LP_Location.Bottom - 1) * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             //LP_C1
             for (int y = LP_C1.Top; y < LP_C1.Bottom; y++)
             {
-                byte* pixelPtr = imgPtr + y * widthstep + LP_C1.Left * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + LP_C1.Left * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + y * widthstep + (LP_C1.Right - 1) * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             for (int x = LP_C1.Left; x < LP_C1.Right; x++)
             {
-                byte* pixelPtr = imgPtr + LP_C1.Top * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + LP_C1.Top * widthstep + x * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + (LP_C1.Bottom - 1) * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             //LP_C2
             for (int y = LP_C2.Top; y < LP_C2.Bottom; y++)
             {
-                byte* pixelPtr = imgPtr + y * widthstep + LP_C2.Left * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + LP_C2.Left * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + y * widthstep + (LP_C2.Right - 1) * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             for (int x = LP_C2.Left; x < LP_C2.Right; x++)
             {
-                byte* pixelPtr = imgPtr + LP_C2.Top * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + LP_C2.Top * widthstep + x * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + (LP_C2.Bottom - 1) * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             //LP_C3
             for (int y = LP_C3.Top; y < LP_C3.Bottom; y++)
             {
-                byte* pixelPtr = imgPtr + y * widthstep + LP_C3.Left * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + LP_C3.Left * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + y * widthstep + (LP_C3.Right - 1) * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             for (int x = LP_C3.Left; x < LP_C3.Right; x++)
             {
-                byte* pixelPtr = imgPtr + LP_C3.Top * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + LP_C3.Top * widthstep + x * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + (LP_C3.Bottom - 1) * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             //LP_C4
             for (int y = LP_C4.Top; y < LP_C4.Bottom; y++)
             {
-                byte* pixelPtr = imgPtr + y * widthstep + LP_C4.Left * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + LP_C4.Left * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + y * widthstep + (LP_C4.Right - 1) * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             for (int x = LP_C4.Left; x < LP_C4.Right; x++)
             {
-                byte* pixelPtr = imgPtr + LP_C4.Top * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + LP_C4.Top * widthstep + x * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + (LP_C4.Bottom - 1) * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             //LP_C5
             for (int y = LP_C5.Top; y < LP_C5.Bottom; y++)
             {
-                byte* pixelPtr = imgPtr + y * widthstep + LP_C5.Left * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + LP_C5.Left * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + y * widthstep + (LP_C5.Right - 1) * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             for (int x = LP_C5.Left; x < LP_C5.Right; x++)
             {
-                byte* pixelPtr = imgPtr + LP_C5.Top * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + LP_C5.Top * widthstep + x * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + (LP_C5.Bottom - 1) * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             //LP_C6
             for (int y = LP_C6.Top; y < LP_C6.Bottom; y++)
             {
-                byte* pixelPtr = imgPtr + y * widthstep + LP_C6.Left * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + y * widthstep + LP_C6.Left * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + y * widthstep + (LP_C6.Right - 1) * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
             for (int x = LP_C6.Left; x < LP_C6.Right; x++)
             {
-                byte* pixelPtr = imgPtr + LP_C6.Top * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr = imgPtr + LP_C6.Top * widthstep + x * nC;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
                 pixelPtr = imgPtr + (LP_C6.Bottom - 1) * widthstep + x * nC;
-                pixelPtr[1] = 255;
+                pixelPtr[1] = 255; pixelPtr[0] = pixelPtr[2] = (byte)(pixelPtr[0] / 2);
             }
         }
 
@@ -3220,9 +3230,10 @@ namespace SS_OpenCV
             int width = m.width;
             int height = m.height;
 
-            //Determine row with highest amplitude
+            //For each row of the image, count number of times the colors switch from black to white/white to black
+            //Find row with highest number of color changes
             int[] sfr = new int[height];
-            int maxRow = 0;
+            int maxRow = 0; //y coord of row with highest number of color changes
             for (int y = 0; y < height; y++)
             {
                 sfr[y] = 0;
@@ -3236,8 +3247,8 @@ namespace SS_OpenCV
             }
 
             int halfMaxValue = sfr[maxRow] / 2; //half of the maximal value
-            int halfMaxWithSlack = halfMaxValue - (halfMaxValue / 2); //in case there isnt a row with exact value as halfMaxValue
-            //Search upper limit
+            int halfMaxWithSlack = halfMaxValue - (halfMaxValue / 2); //in case there isnt a row with the exact same value as halfMaxValue
+            //Search upwards for the upper limit
             upperLimit = 0;
             for (int y = maxRow; y >= 0; y--) if (sfr[y] == halfMaxValue || ((sfr[y] > halfMaxWithSlack) && (sfr[y] < halfMaxValue)))
                 {
@@ -3245,7 +3256,7 @@ namespace SS_OpenCV
                     break;
                 }
 
-            //Search lower limit
+            //Search downwards for the lower limit
             lowerLimit = height - 1;
             for (int y = maxRow; y < height; y++) if (sfr[y] == halfMaxValue || ((sfr[y] > halfMaxWithSlack) && (sfr[y] < halfMaxValue)))
                 {
@@ -3265,7 +3276,7 @@ namespace SS_OpenCV
         unsafe private static void LocateLPLeft(Image<Bgr, byte> img, int upperLimit, int lowerLimit, out int leftLimit)
         {
             //Preprocess image
-            EnhanceBlue(img);
+            EnhanceBlue(img); //binarization
 
             MIplImage m = img.MIplImage;
             byte* imgPtr = (byte*)m.imageData.ToPointer();
@@ -3274,7 +3285,7 @@ namespace SS_OpenCV
             int width = m.width;
             int height = m.height;
 
-            //Determine column with highest amplitude
+            //For each column of the image, count number of white pixels between upper/lower limits and find column with highest count
             int[] sfc = new int[width];
             int maxColumn = 0;
             for (int x = 0; x < width; x++)
@@ -3289,6 +3300,11 @@ namespace SS_OpenCV
             }
 
             //Search left limit
+            /* because the blue rectangle with country indicator is always in the left side of the LP
+             * left limit can be the vertical line that passes on the right side of the blue rectangle
+             * 
+             * |P| 00 - 00 - AA |
+             *   ^ left limit */
             leftLimit = 0;
             for (int x = maxColumn; x < width; x++) if (sfc[x] == 0) { leftLimit = x; break; }
 
@@ -3349,7 +3365,7 @@ namespace SS_OpenCV
         unsafe private static void LocateLPRight(Image<Bgr, byte> img, int upperLimit, int lowerLimit, int leftLimit, out int rightLimit)
         {
             //Preprocess image
-            ConvertToBW_Otsu(img);
+            ConvertToBW_Otsu(img); //binarization
 
             MIplImage m = img.MIplImage;
             byte* imgPtr = (byte*)m.imageData.ToPointer();
@@ -3358,7 +3374,7 @@ namespace SS_OpenCV
             int width = m.width;
             int height = m.height;
 
-            //Determine column with highest amplitude
+            //For each column of the image to the right of the left limit, count number of white pixels between upper/lower limits
             int[] sfc = new int[width];
             for (int x = leftLimit; x < width; x++)
             {
@@ -3375,7 +3391,7 @@ namespace SS_OpenCV
             for (int x = leftLimit; x < width; x++)
                 if (sfc[x] == 0)
                 {
-                    rightLimit = x;
+                    rightLimit = x; //no more white pixels, right side of license plate reached
                     break;
                 }
         }
@@ -3402,14 +3418,14 @@ namespace SS_OpenCV
             int height = LP_Location.Height;
 
             //Preprocess image
-            ConvertToBW_Otsu(img);
+            ConvertToBW_Otsu(img); //binarization
 
             MIplImage m = img.MIplImage;
             byte* imgPtr = (byte*)m.imageData.ToPointer();
             int widthstep = m.widthStep;
             int nC = m.nChannels;
 
-            // Determine column with highest amplitude
+            //For each column of the image (inside the LP region), count number of black pixels and find column with lowest count
             int[] sfc = new int[width];
             int min = 255;
             for (int x = 0; x < width; x++)
@@ -3509,7 +3525,7 @@ namespace SS_OpenCV
             int width = m.width;
             int height = m.height;
 
-            //Determine row with highest amplitude
+            //For each row of the image (inside LP region), count number of black pixels
             int[] sfr = new int[LP_LowerLimit - LP_UpperLimit];
             for (int y = 0; y < sfr.Length; y++)
             {
