@@ -795,7 +795,7 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** TO DO ***
+        /// *** NOT WORKING ***
         /// Calculates the mean of an image, using solution C.
         /// Each pixel is replaced by the mean of their neighborhood (size x size)
         /// </summary>
@@ -804,35 +804,35 @@ namespace SS_OpenCV
         /// <param name="size">The size of the filter</param>
         unsafe public static void Mean_solutionC(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, int size)
         {
-            /*
+            
             MIplImage copy = imgCopy.MIplImage;
             MIplImage m = img.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
 
+            byte* orig = dataPtrCopy;
+            byte* dest, previous;
+
             int widthstep = m.widthStep;
             int nC = m.nChannels;
             int width = m.width;
             int height = m.height;
-            int borders = size / 2;
-            int firstBlue, firstGreen, firstRed;
+            int hborders = size / 2;
+            int sborders = hborders;
+            int firstBlue = (size + sborders * hborders) * orig[0];
+            int firstGreen = (size + sborders * hborders) * orig[1];
+            int firstRed = (size + sborders * hborders) * orig[2];
             int upRightBlue, upRightGreen, upRightRed;
             int leftBlue, leftGreen, leftRed;
 
-            byte* orig = dataPtrCopy;
-            byte* dest, previous;
-
-            for (int y = 1; y < height - borders; y++)
+            for (int y = 1; y < height - hborders; y++)
             { //calculates the first sum in the row
-                firstBlue = (size + borders * borders) * orig[0];
-                firstGreen = (size + borders * borders) * orig[1];
-                firstRed = (size + borders * borders) * orig[2];
-                for (int i = 1; i <= borders; i++)
+                for (int i = 1; i <= sborders; i++)
                 {
-                    firstBlue += (borders + 1) * (orig[i * nC] + orig[i * widthstep]);
-                    firstGreen += (borders + 1) * (orig[i * nC + 1] + orig[i * widthstep + 1]);
-                    firstRed += (borders + 1) * (orig[i * nC + 2] + orig[i * widthstep + 2]);
-                    for (int j = 1; j <= borders; j++)
+                    firstBlue += (size - hborders) * orig[i * nC] + (size - sborders) * orig[i * widthstep];
+                    firstGreen += (size - hborders) * orig[i * nC + 1] + (size - sborders) * orig[i * widthstep + 1];
+                    firstRed += (size - hborders) * orig[i * nC + 2] + (size - sborders) * orig[i * widthstep + 2];
+                    for (int j = 1; j <= hborders; j++)
                     {
                         firstBlue += orig[i * nC + j * widthstep];
                         firstGreen += orig[i * nC + j * widthstep + 1];
@@ -843,35 +843,35 @@ namespace SS_OpenCV
                 dataPtr[1] = (byte)Math.Round(firstGreen / (1.0 * size * size));
                 dataPtr[2] = (byte)Math.Round(firstRed / (1.0 * size * size));
 
-                upRightBlue = firstBlue - (borders + 1) * orig[0] + (borders + 1) * orig[(borders + 1) * nC];
-                upRightGreen = firstGreen - (borders + 1) * orig[1] + (borders + 1) * orig[(borders + 1) * nC + 1];
-                upRightRed = firstRed - (borders + 1) * orig[2] + (borders + 1) * orig[(borders + 1) * nC + 2];
-                for (int j = 1; j <= borders; j++)
+                upRightBlue = firstBlue - (size - hborders) * orig[0] + (size - hborders) * orig[(size - sborders) * nC];
+                upRightGreen = firstGreen - (size - hborders) * orig[1] + (size - hborders) * orig[(size - sborders) * nC + 1];
+                upRightRed = firstRed - (size - hborders) * orig[2] + (size - hborders) * orig[(size - sborders) * nC + 2];
+                for (int j = 1; j <= hborders; j++)
                 {
                     upRightBlue -= orig[j * widthstep];
                     upRightGreen -= orig[j * widthstep + 1];
                     upRightRed -= orig[j * widthstep + 2];
 
-                    upRightBlue += orig[(borders + 1) * nC + j * widthstep];
-                    upRightGreen += orig[(borders + 1) * nC + j * widthstep + 1];
-                    upRightRed += orig[(borders + 1) * nC + j * widthstep + 2];
+                    upRightBlue += orig[(size - sborders) * nC + j * widthstep];
+                    upRightGreen += orig[(size - sborders) * nC + j * widthstep + 1];
+                    upRightRed += orig[(size - sborders) * nC + j * widthstep + 2];
                 }
                 (dataPtr + nC)[0] = (byte)Math.Round(upRightBlue / (1.0 * size * size));
                 (dataPtr + nC)[1] = (byte)Math.Round(upRightGreen / (1.0 * size * size));
                 (dataPtr + nC)[2] = (byte)Math.Round(upRightRed / (1.0 * size * size));
 
-                leftBlue = firstBlue - (borders + 1) * orig[0] + (borders + 1) * orig[(borders + 1) * widthstep];
-                leftGreen = firstGreen - (borders + 1) * orig[1] + (borders + 1) * orig[(borders + 1) * widthstep + 1];
-                leftRed = firstRed - (borders + 1) * orig[2] + (borders + 1) * orig[(borders + 1) * widthstep + 2];
-                for (int j = 1; j <= borders; j++)
+                leftBlue = firstBlue - (size - hborders) * orig[0] + (size - sborders) * orig[(size - hborders) * widthstep];
+                leftGreen = firstGreen - (size - hborders) * orig[1] + (size - sborders) * orig[(size - hborders) * widthstep + 1];
+                leftRed = firstRed - (size - hborders) * orig[2] + (size - sborders) * orig[(size - hborders) * widthstep + 2];
+                for (int j = 1; j <= hborders; j++)
                 {
                     leftBlue -= orig[j * nC];
                     leftGreen -= orig[j * nC + 1];
                     leftRed -= orig[j * nC + 2];
 
-                    leftBlue += orig[(borders + 1) * widthstep + j * nC];
-                    leftGreen += orig[(borders + 1) * widthstep + j * nC + 1];
-                    leftRed += orig[(borders + 1) * widthstep + j * nC + 2];
+                    leftBlue += orig[(size - hborders) * widthstep + j * nC];
+                    leftGreen += orig[(size - hborders) * widthstep + j * nC + 1];
+                    leftRed += orig[(size - hborders) * widthstep + j * nC + 2];
                 }
                 (dataPtr + widthstep)[0] = (byte)Math.Round(leftBlue / (1.0 * size * size));
                 (dataPtr + widthstep)[1] = (byte)Math.Round(leftGreen / (1.0 * size * size));
@@ -883,10 +883,10 @@ namespace SS_OpenCV
                 for (int x = 1; x < width - 1; x++)
                 {
                     dest = dataPtr + y * widthstep + x * nC;
-                    int dx = borders < x ? 0 : x;
-                    int dy = borders < y ? 0 : y;
-                    int dxx = borders < x + 1 ? 0 : x + 1;
-                    int dyy = borders < y + 1 ? 0 : y + 1;
+                    int dx = sborders < x ? 0 : x;
+                    int dy = hborders < y ? 0 : y;
+                    int dxx = sborders < x + 1 ? 0 : x + 1;
+                    int dyy = hborders < y + 1 ? 0 : y + 1;
 
                     int pixBlue = upRightBlue - firstBlue + leftBlue + (orig - dy * widthstep - dx * nC)[0]
                         - (orig + dy * widthstep - dxx * nC)[0] - (orig - dyy * widthstep + dx * nC)[0] + (orig + dy * widthstep - dx * nC)[0];
@@ -907,7 +907,7 @@ namespace SS_OpenCV
                     leftGreen = pixGreen;
                     leftRed = pixRed;
                     //remove the bytes that are no longer needed
-                    for (int j = 0; j <= borders; j++)
+                    for (int j = 0; j <= hborders; j++)
                     {
                         upRightBlue -= previous[j * widthstep];
                         upRightGreen -= previous[j * widthstep + 1];
@@ -915,18 +915,23 @@ namespace SS_OpenCV
                     }
                     //move pointer
                     previous += nC;
-                    for (int j = 0; j <= borders; j++)
+                    for (int j = 0; j <= hborders; j++)
                     {
-                        upRightBlue += previous[(borders - 1) * nC + j * widthstep];
-                        upRightGreen += previous[(borders - 1) * nC + j * widthstep + 1];
-                        upRightRed += previous[(borders - 1) * nC + j * widthstep + 2];
+                        upRightBlue += previous[(sborders - 1) * nC + j * widthstep];
+                        upRightGreen += previous[(sborders - 1) * nC + j * widthstep + 1];
+                        upRightRed += previous[(sborders - 1) * nC + j * widthstep + 2];
                     }
+                    if (sborders < size - 1) sborders++;
                 }
                 //move to the next row
                 orig += widthstep;
-                if (borders < size) borders++;
+                if (hborders < size - 1) hborders++;
+                sborders = size / 2;
+                firstBlue = (size - sborders) * orig[0];
+                firstGreen = (size - sborders) * orig[1];
+                firstRed = (size - sborders) * orig[2];
             }
-            */
+            
         }
 
         /// <summary>
@@ -3247,7 +3252,7 @@ namespace SS_OpenCV
             }
 
             int halfMaxValue = sfr[maxRow] / 2; //half of the maximal value
-            int halfMaxWithSlack = halfMaxValue - (halfMaxValue / 2); //in case there isnt a row with the exact same value as halfMaxValue
+            int halfMaxWithSlack = halfMaxValue / 2; //in case there isnt a row with the exact same value as halfMaxValue
             //Search upwards for the upper limit
             upperLimit = 0;
             for (int y = maxRow; y >= 0; y--) if (sfr[y] == halfMaxValue || ((sfr[y] > halfMaxWithSlack) && (sfr[y] < halfMaxValue)))
