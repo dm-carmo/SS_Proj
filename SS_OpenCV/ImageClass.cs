@@ -804,6 +804,7 @@ namespace SS_OpenCV
         /// <param name="size">The size of the filter</param>
         unsafe public static void Mean_solutionC(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, int size)
         {
+            /*
             MIplImage copy = imgCopy.MIplImage;
             MIplImage m = img.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
@@ -925,6 +926,7 @@ namespace SS_OpenCV
                 orig += widthstep;
                 if (borders < size) borders++;
             }
+            */
         }
 
         /// <summary>
@@ -3004,7 +3006,6 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** NOT PERFECT ***
         /// Finds a license plate in an image and returns its location and respective characters
         /// </summary>
         /// <param name="img">The image</param>
@@ -3236,12 +3237,11 @@ namespace SS_OpenCV
             int maxRow = 0; //y coord of row with highest number of color changes
             for (int y = 0; y < height; y++)
             {
-                sfr[y] = 0;
-                for (int x = 2; x < width - 2; x++)
+                for (int x = 1; x < width - 1; x++)
                 {
                     byte* pixelPtr = imgPtr + y * widthstep + x * nC;
                     byte* pixelPtrPrev = imgPtr + y * widthstep + (x - 1) * nC;
-                    if ((pixelPtrPrev[0] > 128 && pixelPtr[0] < 128) || (pixelPtrPrev[0] < 128 && pixelPtr[0] > 128)) sfr[y]++; //color switched. edge found
+                    if ((pixelPtrPrev[0] ^ pixelPtr[0]) == 255) sfr[y]++; //color switched. edge found
                 }
                 if (sfr[y] > sfr[maxRow]) maxRow = y; //new max found
             }
@@ -3306,7 +3306,11 @@ namespace SS_OpenCV
              * |P| 00 - 00 - AA |
              *   ^ left limit */
             leftLimit = 0;
-            for (int x = maxColumn; x < width; x++) if (sfc[x] == 0) { leftLimit = x; break; }
+            for (int x = maxColumn; x < width; x++) if (sfc[x] == 0)
+                {
+                    leftLimit = x;
+                    break;
+                }
 
         }
 
@@ -3430,14 +3434,10 @@ namespace SS_OpenCV
             int min = 255;
             for (int x = 0; x < width; x++)
             {
-                sfc[x] = 0;
                 for (int y = 0; y < height; y++)
                 {
                     byte* pixelPtr = imgPtr + (y + upperLimit) * widthstep + (x + leftLimit) * nC;
-                    if (pixelPtr[0] == 0)
-                    {
-                        sfc[x]++;
-                    }
+                    if (pixelPtr[0] == 0) sfc[x]++;
                 }
                 if (sfc[x] < min && sfc[x] != 0) min = sfc[x]; //new min found
 
@@ -3533,10 +3533,7 @@ namespace SS_OpenCV
                 for (int x = 0; x < charWidth; x++)
                 {
                     byte* pixelPtr = imgPtr + (y + LP_UpperLimit) * widthstep + (x + charX) * nC;
-                    if (pixelPtr[0] == 0)
-                    {
-                        sfr[y]++;
-                    }
+                    if (pixelPtr[0] == 0) sfr[y]++;
                 }
             }
 
@@ -3556,11 +3553,7 @@ namespace SS_OpenCV
                 }
                 else if (start != -1)
                 {
-                    if (sfr[i] != 0)
-                    {
-                        //inside object
-                        length++;
-                    }
+                    if (sfr[i] != 0) /*inside object*/ length++;
                     else
                     {
                         //outside object
