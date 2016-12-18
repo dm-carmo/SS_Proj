@@ -1102,27 +1102,30 @@ namespace SS_OpenCV
 
             int[,] matSum = new int[9, 9];
 
+            int sum, min;
+            byte* dest, orig, pixel, a, b, c, d, e, f, g, h, i;
+
             // Core
             // Percorre a vizinhanca e seleciona o pixel com menor distancia
             for (int y = 1; y < height - 1; y++)
             {
                 for (int x = 1; x < width - 1; x++)
                 {
-                    byte* dest = dataPtr + y * widthstep + x * nC;
-                    byte* orig = dataPtrCopy + y * widthstep + x * nC;
+                    dest = dataPtr + y * widthstep + x * nC;
+                    orig = dataPtrCopy + y * widthstep + x * nC;
 
-                    byte* a = (orig - widthstep - nC);
-                    byte* b = (orig - widthstep);
-                    byte* c = (orig - widthstep + nC);
-                    byte* d = (orig - nC);
-                    byte* e = orig;
-                    byte* f = (orig + nC);
-                    byte* g = (orig + widthstep - nC);
-                    byte* h = (orig + widthstep);
-                    byte* i = (orig + widthstep + nC);
+                    a = (orig - widthstep - nC);
+                    b = (orig - widthstep);
+                    c = (orig - widthstep + nC);
+                    d = (orig - nC);
+                    e = orig;
+                    f = (orig + nC);
+                    g = (orig + widthstep - nC);
+                    h = (orig + widthstep);
+                    i = (orig + widthstep + nC);
 
                     //Sum (0,0)
-                    int sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+                    sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
                     sum += matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
                     sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
                     sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
@@ -1130,8 +1133,8 @@ namespace SS_OpenCV
                     sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
                     sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
                     sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
-                    byte* pixel = a;
-                    int min = sum;
+                    pixel = a;
+                    min = sum;
 
                     //Sum (0,1)
                     sum = matSum[0, 1];
@@ -1259,6 +1262,1203 @@ namespace SS_OpenCV
                         dest[1] = pixel[1];
                         dest[2] = pixel[2];
                     }
+                }
+            }
+            //Corners
+            //Top left corner
+            a = b = d = e = dataPtr;
+            c = f = (dataPtr + nC);
+            g = h = (dataPtr + widthstep);
+            i = (dataPtr + widthstep + nC);
+
+            dest = dataPtrCopy;
+
+            //Sum (0,0)
+            //sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+            sum = matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+            //sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+            //sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+            sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+            sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+            sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+            sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+            pixel = a;
+            min = sum;
+
+            //Sum (0,1)
+            //sum = matSum[0, 1];
+            sum = matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+            //sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+            //sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+            sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+            sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+            sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+            sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = b;
+                min = sum;
+            }
+
+            //Sum (0,2)
+            sum = matSum[0, 2];
+            sum += matSum[1, 2];
+            sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+            sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+            //sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+            sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+            sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+            sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = c;
+                min = sum;
+            }
+
+            //Sum (1,0)
+            //sum = matSum[0, 3];
+            //sum += matSum[1, 3];
+            sum = matSum[2, 3];
+            //sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+            sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+            sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+            sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+            sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = d;
+                min = sum;
+            }
+
+            //Sum (1,1)
+            //sum = matSum[0, 4];
+            //sum += matSum[1, 4];
+            sum = matSum[2, 4];
+            //sum += matSum[3, 4];
+            sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+            sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+            sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+            sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = e;
+                min = sum;
+            }
+
+            //Sum (1,2)
+            sum = matSum[0, 5];
+            sum += matSum[1, 5];
+            //sum += matSum[2, 5];
+            sum += matSum[3, 5];
+            sum += matSum[4, 5];
+            sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+            sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+            sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = f;
+                min = sum;
+            }
+
+            //Sum (2,0)
+            sum = matSum[0, 6];
+            sum += matSum[1, 6];
+            sum += matSum[2, 6];
+            sum += matSum[3, 6];
+            sum += matSum[4, 6];
+            sum += matSum[5, 6];
+            //sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+            sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = g;
+                min = sum;
+            }
+
+            //Sum (2,1)
+            sum = matSum[0, 7];
+            sum += matSum[1, 7];
+            sum += matSum[2, 7];
+            sum += matSum[3, 7];
+            sum += matSum[4, 7];
+            sum += matSum[5, 7];
+            //sum += matSum[6, 7];
+            sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = h;
+                min = sum;
+            }
+
+            //Sum (2,2)
+            sum = matSum[0, 8];
+            sum += matSum[1, 8];
+            sum += matSum[2, 8];
+            sum += matSum[3, 8];
+            sum += matSum[4, 8];
+            sum += matSum[5, 8];
+            sum += matSum[6, 8];
+            sum += matSum[7, 8];
+            if (sum < min)
+            {
+                dest[0] = i[0];
+                dest[1] = i[1];
+                dest[2] = i[2];
+            }
+            else
+            {
+                dest[0] = pixel[0];
+                dest[1] = pixel[1];
+                dest[2] = pixel[2];
+            }
+
+            //Top right corner
+            b = c = f = e = (dataPtr + (width - 1) * nC);
+            a = d = (e - nC);
+            i = h = (e + widthstep);
+            g = (e + widthstep - nC);
+
+            dest = (dataPtrCopy + (width - 1) * nC);
+
+            //Sum (0,0)
+            sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+            sum += matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+            //sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+            sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+            sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+            sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+            sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+            sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+            pixel = a;
+            min = sum;
+
+            //Sum (0,1)
+            sum = matSum[0, 1];
+            //sum += matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+            sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+            //sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+            //sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+            sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+            sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+            sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = b;
+                min = sum;
+            }
+
+            //Sum (0,2)
+            sum = matSum[0, 2];
+            //sum += matSum[1, 2];
+            sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+            //sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+            //sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+            sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+            sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+            sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = c;
+                min = sum;
+            }
+
+            //Sum (1,0)
+            //sum = matSum[0, 3];
+            sum = matSum[1, 3];
+            sum += matSum[2, 3];
+            sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+            sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+            sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+            sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+            sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = d;
+                min = sum;
+            }
+
+            //Sum (1,1)
+            sum = matSum[0, 4];
+            //sum += matSum[1, 4];
+            //sum += matSum[2, 4];
+            sum += matSum[3, 4];
+            //sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+            sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+            sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+            sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = e;
+                min = sum;
+            }
+
+            //Sum (1,2)
+            sum = matSum[0, 5];
+            //sum += matSum[1, 5];
+            //sum += matSum[2, 5];
+            sum += matSum[3, 5];
+            //sum += matSum[4, 5];
+            sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+            sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+            sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = f;
+                min = sum;
+            }
+
+            //Sum (2,0)
+            sum = matSum[0, 6];
+            sum += matSum[1, 6];
+            sum += matSum[2, 6];
+            sum += matSum[3, 6];
+            sum += matSum[4, 6];
+            sum += matSum[5, 6];
+            sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+            sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = g;
+                min = sum;
+            }
+
+            //Sum (2,1)
+            sum = matSum[0, 7];
+            sum += matSum[1, 7];
+            sum += matSum[2, 7];
+            sum += matSum[3, 7];
+            sum += matSum[4, 7];
+            sum += matSum[5, 7];
+            sum += matSum[6, 7];
+            //sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = h;
+                min = sum;
+            }
+
+            //Sum (2,2)
+            sum = matSum[0, 8];
+            sum += matSum[1, 8];
+            sum += matSum[2, 8];
+            sum += matSum[3, 8];
+            sum += matSum[4, 8];
+            sum += matSum[5, 8];
+            sum += matSum[6, 8];
+            //sum += matSum[7, 8];
+            if (sum < min)
+            {
+                dest[0] = i[0];
+                dest[1] = i[1];
+                dest[2] = i[2];
+            }
+            else
+            {
+                dest[0] = pixel[0];
+                dest[1] = pixel[1];
+                dest[2] = pixel[2];
+            }
+
+            //Bottom left corner
+            h = g = d = e = (dataPtr + (height - 1) * widthstep);
+            a = b = (e - widthstep);
+            i = f = (e + nC);
+            c = (e - widthstep + nC);
+
+            dest = (dataPtrCopy + (width - 1) * nC);
+
+            //Sum (0,0)
+            //sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+            sum = matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+            sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+            sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+            sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+            sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+            sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+            sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+            pixel = a;
+            min = sum;
+
+            //Sum (0,1)
+            //sum = matSum[0, 1];
+            sum = matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+            sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+            sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+            sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+            sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+            sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+            sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = b;
+                min = sum;
+            }
+
+            //Sum (0,2)
+            sum = matSum[0, 2];
+            sum += matSum[1, 2];
+            sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+            sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+            sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+            sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+            sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+            sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = c;
+                min = sum;
+            }
+
+            //Sum (1,0)
+            sum = matSum[0, 3];
+            sum += matSum[1, 3];
+            sum += matSum[2, 3];
+            //sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+            sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+            //sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+            //sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+            sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = d;
+                min = sum;
+            }
+
+            //Sum (1,1)
+            sum = matSum[0, 4];
+            sum += matSum[1, 4];
+            sum += matSum[2, 4];
+            //sum += matSum[3, 4];
+            sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+            //sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+            //sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+            sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = e;
+                min = sum;
+            }
+
+            //Sum (1,2)
+            sum = matSum[0, 5];
+            sum += matSum[1, 5];
+            sum += matSum[2, 5];
+            sum += matSum[3, 5];
+            sum += matSum[4, 5];
+            sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+            sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+            //sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = f;
+                min = sum;
+            }
+
+            //Sum (2,0)
+            sum = matSum[0, 6];
+            sum += matSum[1, 6];
+            sum += matSum[2, 6];
+            //sum += matSum[3, 6];
+            //sum += matSum[4, 6];
+            sum += matSum[5, 6];
+            //sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+            sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = g;
+                min = sum;
+            }
+
+            //Sum (2,1)
+            sum = matSum[0, 7];
+            sum += matSum[1, 7];
+            sum += matSum[2, 7];
+            //sum += matSum[3, 7];
+            //sum += matSum[4, 7];
+            sum += matSum[5, 7];
+            //sum += matSum[6, 7];
+            sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = h;
+                min = sum;
+            }
+
+            //Sum (2,2)
+            sum = matSum[0, 8];
+            sum += matSum[1, 8];
+            sum += matSum[2, 8];
+            sum += matSum[3, 8];
+            sum += matSum[4, 8];
+            //sum += matSum[5, 8];
+            sum += matSum[6, 8];
+            sum += matSum[7, 8];
+            if (sum < min)
+            {
+                dest[0] = i[0];
+                dest[1] = i[1];
+                dest[2] = i[2];
+            }
+            else
+            {
+                dest[0] = pixel[0];
+                dest[1] = pixel[1];
+                dest[2] = pixel[2];
+            }
+
+            //Bottom right corner
+            f = h = i = e = (dataPtr + (height - 1) * widthstep + (width - 1) * nC);
+            c = b = (e - widthstep);
+            g = d = (e - nC);
+            a = (e - widthstep - nC);
+
+            dest = (dataPtrCopy + (height - 1) * widthstep + (width - 1) * nC);
+
+            //Sum (0,0)
+            sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+            sum += matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+            sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+            sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+            sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+            sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+            sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+            sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+            pixel = a;
+            min = sum;
+
+            //Sum (0,1)
+            sum = matSum[0, 1];
+            //sum += matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+            sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+            sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+            sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+            sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+            sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+            sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = b;
+                min = sum;
+            }
+
+            //Sum (0,2)
+            sum = matSum[0, 2];
+            //sum += matSum[1, 2];
+            sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+            sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+            sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+            sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+            sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+            sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = c;
+                min = sum;
+            }
+
+            //Sum (1,0)
+            sum = matSum[0, 3];
+            sum += matSum[1, 3];
+            sum += matSum[2, 3];
+            sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+            sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+            //sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+            sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+            sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = d;
+                min = sum;
+            }
+
+            //Sum (1,1)
+            sum = matSum[0, 4];
+            sum += matSum[1, 4];
+            sum += matSum[2, 4];
+            sum += matSum[3, 4];
+            //sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+            sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+            //sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+            //sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = e;
+                min = sum;
+            }
+
+            //Sum (1,2)
+            sum = matSum[0, 5];
+            sum += matSum[1, 5];
+            sum += matSum[2, 5];
+            sum += matSum[3, 5];
+            //sum += matSum[4, 5];
+            sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+            //sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+            //sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = f;
+                min = sum;
+            }
+
+            //Sum (2,0)
+            sum = matSum[0, 6];
+            sum += matSum[1, 6];
+            sum += matSum[2, 6];
+            //sum += matSum[3, 6];
+            sum += matSum[4, 6];
+            sum += matSum[5, 6];
+            sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+            sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = g;
+                min = sum;
+            }
+
+            //Sum (2,1)
+            sum = matSum[0, 7];
+            sum += matSum[1, 7];
+            sum += matSum[2, 7];
+            sum += matSum[3, 7];
+            //sum += matSum[4, 7];
+            //sum += matSum[5, 7];
+            sum += matSum[6, 7];
+            //sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+            if (sum < min)
+            {
+                pixel = h;
+                min = sum;
+            }
+
+            //Sum (2,2)
+            sum = matSum[0, 8];
+            sum += matSum[1, 8];
+            sum += matSum[2, 8];
+            sum += matSum[3, 8];
+            //sum += matSum[4, 8];
+            //sum += matSum[5, 8];
+            sum += matSum[6, 8];
+            //sum += matSum[7, 8];
+            if (sum < min)
+            {
+                dest[0] = i[0];
+                dest[1] = i[1];
+                dest[2] = i[2];
+            }
+            else
+            {
+                dest[0] = pixel[0];
+                dest[1] = pixel[1];
+                dest[2] = pixel[2];
+            }
+
+            //Margins
+            //Margin top
+            for (int x = 1; x < width - 1; x++)
+            {
+                a = d = (dataPtr + (x - 1) * nC);
+                b = e = (dataPtr + x * nC);
+                c = f = (dataPtr + (x + 1) * nC);
+                g = (dataPtr + widthstep + (x - 1) * nC);
+                h = (dataPtr + widthstep + x * nC);
+                i = (dataPtr + widthstep + (x + 1) * nC);
+
+                dest = (dataPtrCopy + x * nC);
+
+                //Sum (0,0)
+                sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+                sum += matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+                //sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+                sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+                sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+                sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+                sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+                sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+                pixel = a;
+                min = sum;
+
+                //Sum (0,1)
+                sum = matSum[0, 1];
+                sum += matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+                sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+                //sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+                sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+                sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+                sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+                sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = b;
+                    min = sum;
+                }
+
+                //Sum (0,2)
+                sum = matSum[0, 2];
+                sum += matSum[1, 2];
+                sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+                sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+                //sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+                sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+                sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+                sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = c;
+                    min = sum;
+                }
+
+                //Sum (1,0)
+                //sum = matSum[0, 3];
+                sum = matSum[1, 3];
+                sum += matSum[2, 3];
+                sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+                sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+                sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+                sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+                sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = d;
+                    min = sum;
+                }
+
+                //Sum (1,1)
+                sum = matSum[0, 4];
+                //sum += matSum[1, 4];
+                sum += matSum[2, 4];
+                sum += matSum[3, 4];
+                sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+                sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+                sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+                sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = e;
+                    min = sum;
+                }
+
+                //Sum (1,2)
+                sum = matSum[0, 5];
+                sum += matSum[1, 5];
+                //sum += matSum[2, 5];
+                sum += matSum[3, 5];
+                sum += matSum[4, 5];
+                sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+                sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+                sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = f;
+                    min = sum;
+                }
+
+                //Sum (2,0)
+                sum = matSum[0, 6];
+                sum += matSum[1, 6];
+                sum += matSum[2, 6];
+                sum += matSum[3, 6];
+                sum += matSum[4, 6];
+                sum += matSum[5, 6];
+                sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+                sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = g;
+                    min = sum;
+                }
+
+                //Sum (2,1)
+                sum = matSum[0, 7];
+                sum += matSum[1, 7];
+                sum += matSum[2, 7];
+                sum += matSum[3, 7];
+                sum += matSum[4, 7];
+                sum += matSum[5, 7];
+                sum += matSum[6, 7];
+                sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = h;
+                    min = sum;
+                }
+
+                //Sum (2,2)
+                sum = matSum[0, 8];
+                sum += matSum[1, 8];
+                sum += matSum[2, 8];
+                sum += matSum[3, 8];
+                sum += matSum[4, 8];
+                sum += matSum[5, 8];
+                sum += matSum[6, 8];
+                sum += matSum[7, 8];
+                if (sum < min)
+                {
+                    dest[0] = i[0];
+                    dest[1] = i[1];
+                    dest[2] = i[2];
+                }
+                else
+                {
+                    dest[0] = pixel[0];
+                    dest[1] = pixel[1];
+                    dest[2] = pixel[2];
+                }
+            }
+
+            //Margin bottom
+            for (int x = 1; x < width - 1; x++)
+            {
+                g = d = (dataPtr + (height - 1) * widthstep + (x - 1) * nC);
+                h = e = (dataPtr + (height - 1) * widthstep + x * nC);
+                i = f = (dataPtr + (height - 1) * widthstep + (x + 1) * nC);
+                a = (dataPtr + (height - 2) * widthstep + (x - 1) * nC);
+                b = (dataPtr + (height - 2) * widthstep + x * nC);
+                c = (dataPtr + (height - 2) * widthstep + (x + 1) * nC);
+
+                dest = (dataPtrCopy + (height - 1) * widthstep + x * nC);
+
+                //Sum (0,0)
+                sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+                sum += matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+                sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+                sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+                sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+                sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+                sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+                sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+                pixel = a;
+                min = sum;
+
+                //Sum (0,1)
+                sum = matSum[0, 1];
+                sum += matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+                sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+                sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+                sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+                sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+                sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+                sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = b;
+                    min = sum;
+                }
+
+                //Sum (0,2)
+                sum = matSum[0, 2];
+                sum += matSum[1, 2];
+                sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+                sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+                sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+                sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+                sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+                sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = c;
+                    min = sum;
+                }
+
+                //Sum (1,0)
+                sum = matSum[0, 3];
+                sum += matSum[1, 3];
+                sum += matSum[2, 3];
+                sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+                sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+                //sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+                sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+                sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = d;
+                    min = sum;
+                }
+
+                //Sum (1,1)
+                sum = matSum[0, 4];
+                sum += matSum[1, 4];
+                sum += matSum[2, 4];
+                sum += matSum[3, 4];
+                sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+                sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+                //sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+                sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = e;
+                    min = sum;
+                }
+
+                //Sum (1,2)
+                sum = matSum[0, 5];
+                sum += matSum[1, 5];
+                sum += matSum[2, 5];
+                sum += matSum[3, 5];
+                sum += matSum[4, 5];
+                sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+                sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+                //sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = f;
+                    min = sum;
+                }
+
+                //Sum (2,0)
+                sum = matSum[0, 6];
+                sum += matSum[1, 6];
+                sum += matSum[2, 6];
+                //sum += matSum[3, 6];
+                sum += matSum[4, 6];
+                sum += matSum[5, 6];
+                sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+                sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = g;
+                    min = sum;
+                }
+
+                //Sum (2,1)
+                sum = matSum[0, 7];
+                sum += matSum[1, 7];
+                sum += matSum[2, 7];
+                sum += matSum[3, 7];
+                //sum += matSum[4, 7];
+                sum += matSum[5, 7];
+                sum += matSum[6, 7];
+                sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = h;
+                    min = sum;
+                }
+
+                //Sum (2,2)
+                sum = matSum[0, 8];
+                sum += matSum[1, 8];
+                sum += matSum[2, 8];
+                sum += matSum[3, 8];
+                sum += matSum[4, 8];
+                //sum += matSum[5, 8];
+                sum += matSum[6, 8];
+                sum += matSum[7, 8];
+                if (sum < min)
+                {
+                    dest[0] = i[0];
+                    dest[1] = i[1];
+                    dest[2] = i[2];
+                }
+                else
+                {
+                    dest[0] = pixel[0];
+                    dest[1] = pixel[1];
+                    dest[2] = pixel[2];
+                }
+            }
+
+            //Margin left
+            for (int y = 1; y < height - 1; y++)
+            {
+                a = b = (dataPtr + (y - 1) * widthstep);
+                d = e = (dataPtr + y * widthstep);
+                g = h = (dataPtr + (y + 1) * widthstep);
+                c = (dataPtr + (y - 1) * widthstep + nC);
+                f = (dataPtr + y * widthstep + nC);
+                i = (dataPtr + (y + 1) * widthstep + nC);
+
+                dest = (dataPtrCopy + y * widthstep);
+
+                //Sum (0,0)
+                //sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+                sum = matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+                sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+                sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+                sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+                sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+                sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+                sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+                pixel = a;
+                min = sum;
+
+                //Sum (0,1)
+                //sum = matSum[0, 1];
+                sum = matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+                sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+                sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+                sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+                sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+                sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+                sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = b;
+                    min = sum;
+                }
+
+                //Sum (0,2)
+                sum = matSum[0, 2];
+                sum += matSum[1, 2];
+                sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+                sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+                sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+                sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+                sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+                sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = c;
+                    min = sum;
+                }
+
+                //Sum (1,0)
+                sum = matSum[0, 3];
+                sum += matSum[1, 3];
+                sum += matSum[2, 3];
+                //sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+                sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+                sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+                sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+                sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = d;
+                    min = sum;
+                }
+
+                //Sum (1,1)
+                sum = matSum[0, 4];
+                sum += matSum[1, 4];
+                sum += matSum[2, 4];
+                //sum += matSum[3, 4];
+                sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+                sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+                sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+                sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = e;
+                    min = sum;
+                }
+
+                //Sum (1,2)
+                sum = matSum[0, 5];
+                sum += matSum[1, 5];
+                sum += matSum[2, 5];
+                sum += matSum[3, 5];
+                sum += matSum[4, 5];
+                sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+                sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+                sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = f;
+                    min = sum;
+                }
+
+                //Sum (2,0)
+                sum = matSum[0, 6];
+                sum += matSum[1, 6];
+                sum += matSum[2, 6];
+                sum += matSum[3, 6];
+                sum += matSum[4, 6];
+                sum += matSum[5, 6];
+                //sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+                sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = g;
+                    min = sum;
+                }
+
+                //Sum (2,1)
+                sum = matSum[0, 7];
+                sum += matSum[1, 7];
+                sum += matSum[2, 7];
+                sum += matSum[3, 7];
+                sum += matSum[4, 7];
+                sum += matSum[5, 7];
+                //sum += matSum[6, 7];
+                sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = h;
+                    min = sum;
+                }
+
+                //Sum (2,2)
+                sum = matSum[0, 8];
+                sum += matSum[1, 8];
+                sum += matSum[2, 8];
+                sum += matSum[3, 8];
+                sum += matSum[4, 8];
+                sum += matSum[5, 8];
+                sum += matSum[6, 8];
+                sum += matSum[7, 8];
+                if (sum < min)
+                {
+                    dest[0] = i[0];
+                    dest[1] = i[1];
+                    dest[2] = i[2];
+                }
+                else
+                {
+                    dest[0] = pixel[0];
+                    dest[1] = pixel[1];
+                    dest[2] = pixel[2];
+                }
+            }
+
+            //Margin right
+            for (int y = 1; y < height - 1; y++)
+            {
+                c = b = (dataPtr + (y - 1) * widthstep + (width - 1) * nC);
+                f = e = (dataPtr + y * widthstep + (width - 1) * nC);
+                i = h = (dataPtr + (y + 1) * widthstep + (width - 1) * nC);
+                a = (dataPtr + (y - 1) * widthstep + (width - 2) * nC);
+                d = (dataPtr + y * widthstep + (width - 2) * nC);
+                g = (dataPtr + (y + 1) * widthstep + (width - 2) * nC);
+
+                dest = (dataPtrCopy + y * widthstep + (width - 1) * nC);
+
+                //Sum (0,0)
+                sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+                sum += matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+                sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+                sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+                sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+                sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+                sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+                sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+                pixel = a;
+                min = sum;
+
+                //Sum (0,1)
+                sum = matSum[0, 1];
+                //sum += matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+                sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+                sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+                sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+                sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+                sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+                sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = b;
+                    min = sum;
+                }
+
+                //Sum (0,2)
+                sum = matSum[0, 2];
+                //sum += matSum[1, 2];
+                sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+                sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+                sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+                sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+                sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+                sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = c;
+                    min = sum;
+                }
+
+                //Sum (1,0)
+                sum = matSum[0, 3];
+                sum += matSum[1, 3];
+                sum += matSum[2, 3];
+                sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+                sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+                sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+                sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+                sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = d;
+                    min = sum;
+                }
+
+                //Sum (1,1)
+                sum = matSum[0, 4];
+                sum += matSum[1, 4];
+                sum += matSum[2, 4];
+                sum += matSum[3, 4];
+                //sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+                sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+                sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+                sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = e;
+                    min = sum;
+                }
+
+                //Sum (1,2)
+                sum = matSum[0, 5];
+                sum += matSum[1, 5];
+                sum += matSum[2, 5];
+                sum += matSum[3, 5];
+                //sum += matSum[4, 5];
+                sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+                sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+                sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = f;
+                    min = sum;
+                }
+
+                //Sum (2,0)
+                sum = matSum[0, 6];
+                sum += matSum[1, 6];
+                sum += matSum[2, 6];
+                sum += matSum[3, 6];
+                sum += matSum[4, 6];
+                sum += matSum[5, 6];
+                sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+                sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = g;
+                    min = sum;
+                }
+
+                //Sum (2,1)
+                sum = matSum[0, 7];
+                sum += matSum[1, 7];
+                sum += matSum[2, 7];
+                sum += matSum[3, 7];
+                sum += matSum[4, 7];
+                sum += matSum[5, 7];
+                sum += matSum[6, 7];
+                //sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+                if (sum < min)
+                {
+                    pixel = h;
+                    min = sum;
+                }
+
+                //Sum (2,2)
+                sum = matSum[0, 8];
+                sum += matSum[1, 8];
+                sum += matSum[2, 8];
+                sum += matSum[3, 8];
+                sum += matSum[4, 8];
+                sum += matSum[5, 8];
+                sum += matSum[6, 8];
+                //sum += matSum[7, 8];
+                if (sum < min)
+                {
+                    dest[0] = i[0];
+                    dest[1] = i[1];
+                    dest[2] = i[2];
+                }
+                else
+                {
+                    dest[0] = pixel[0];
+                    dest[1] = pixel[1];
+                    dest[2] = pixel[2];
                 }
             }
         }
@@ -2612,7 +3812,7 @@ namespace SS_OpenCV
                 extAssym += Math.Abs(assym);
             }
 
-            return extAssym / npixels;
+            return extAssym / npixels / 2;
         }
 
         /// <summary>
@@ -2653,7 +3853,7 @@ namespace SS_OpenCV
                 extAssym += Math.Abs(assym);
             }
 
-            return extAssym / npixels;
+            return extAssym / npixels / 2;
         }
 
         /// <summary>
@@ -2694,7 +3894,7 @@ namespace SS_OpenCV
                 if (intAssym < 0) intAssym *= -1;
             }
 
-            return intAssym / npixels;
+            return intAssym / npixels / 2;
         }
 
         /// <summary>
@@ -2735,7 +3935,7 @@ namespace SS_OpenCV
                 if (intAssym < 0) intAssym *= -1;
             }
 
-            return intAssym / npixels;
+            return intAssym / npixels / 2;
         }
 
         /// <summary>
@@ -2776,7 +3976,7 @@ namespace SS_OpenCV
                 extAssym += Math.Abs(assym);
             }
 
-            return extAssym / npixels;
+            return extAssym / npixels / 2;
         }
 
         /// <summary>
@@ -2817,7 +4017,7 @@ namespace SS_OpenCV
                 extAssym += Math.Abs(assym);
             }
 
-            return extAssym / npixels;
+            return extAssym / npixels / 2;
         }
 
         /// <summary>
@@ -2858,7 +4058,7 @@ namespace SS_OpenCV
                 if (intAssym < 0) intAssym *= -1;
             }
 
-            return intAssym / npixels;
+            return intAssym / npixels / 2;
         }
 
         /// <summary>
@@ -2899,7 +4099,7 @@ namespace SS_OpenCV
                 if (intAssym < 0) intAssym *= -1;
             }
 
-            return intAssym / npixels;
+            return intAssym / npixels / 2;
         }
 
         /// <summary>
