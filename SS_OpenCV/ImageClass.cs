@@ -621,24 +621,26 @@ namespace SS_OpenCV
             int nC = m.nChannels;
             int width = m.width;
             int height = m.height;
+            int firstBlue, firstGreen, firstRed;
 
             byte* orig = dataPtrCopy;
+            byte* dest, previous;
 
             for (int y = 1; y < height - 1; y++)
             { //calculates the first sum in the row
-                int firstBlue = orig[0] + orig[nC] + orig[2 * nC] + orig[widthstep] + orig[widthstep + nC] +
+                firstBlue = orig[0] + orig[nC] + orig[2 * nC] + orig[widthstep] + orig[widthstep + nC] +
                     orig[widthstep + 2 * nC] + orig[2 * widthstep] + orig[2 * widthstep + nC] + orig[2 * widthstep + 2 * nC];
-                int firstGreen = orig[1] + orig[nC + 1] + orig[2 * nC + 1] + orig[widthstep + 1] + orig[widthstep + nC + 1] +
+                firstGreen = orig[1] + orig[nC + 1] + orig[2 * nC + 1] + orig[widthstep + 1] + orig[widthstep + nC + 1] +
                 orig[widthstep + 2 * nC + 1] + orig[2 * widthstep + 1] + orig[2 * widthstep + nC + 1] + orig[2 * widthstep + 2 * nC + 1];
-                int firstRed = orig[2] + orig[nC + 2] + orig[2 * nC + 2] + orig[widthstep + 2] + orig[widthstep + nC + 2] +
+                firstRed = orig[2] + orig[nC + 2] + orig[2 * nC + 2] + orig[widthstep + 2] + orig[widthstep + nC + 2] +
                 orig[widthstep + 2 * nC + 2] + orig[2 * widthstep + 2] + orig[2 * widthstep + nC + 2] + orig[2 * widthstep + 2 * nC + 2];
 
                 //used later
-                byte* previous = orig;
+                previous = orig;
 
                 for (int x = 1; x < width - 1; x++)
                 {
-                    byte* dest = dataPtr + y * widthstep + x * nC;
+                    dest = dataPtr + y * widthstep + x * nC;
                     dest[0] = (byte)Math.Round(firstBlue / 9.0);
                     dest[1] = (byte)Math.Round(firstGreen / 9.0);
                     dest[2] = (byte)Math.Round(firstRed / 9.0);
@@ -656,6 +658,141 @@ namespace SS_OpenCV
                 //move to the next row
                 orig += widthstep;
             }
+
+            //Margem superior
+            orig = dataPtrCopy;
+            previous = orig;
+            firstBlue = 2 * orig[0] + 2 * orig[nC] + 2 * orig[2 * nC] + orig[widthstep] + orig[widthstep + nC] +
+                orig[widthstep + 2 * nC];
+            firstGreen = 2 * orig[1] + 2 * orig[nC + 1] + 2 * orig[2 * nC + 1] + orig[widthstep + 1] + orig[widthstep + nC + 1] +
+            orig[widthstep + 2 * nC + 1];
+            firstRed = 2 * orig[2] + 2 * orig[nC + 2] + 2 * orig[2 * nC + 2] + orig[widthstep + 2] + orig[widthstep + nC + 2] +
+            orig[widthstep + 2 * nC + 2];
+            for (int x = 1; x < width - 1; x++)
+            {
+                dest = dataPtr + x * nC;
+                dest[0] = (byte)Math.Round(firstBlue / 9.0);
+                dest[1] = (byte)Math.Round(firstGreen / 9.0);
+                dest[2] = (byte)Math.Round(firstRed / 9.0);
+                //remove the bytes that are no longer needed
+                firstBlue -= 2 * previous[0] + previous[widthstep];
+                firstGreen -= 2 * previous[1] + previous[widthstep + 1];
+                firstRed -= 2 * previous[2] + previous[widthstep + 2];
+                //move pointer
+                previous += nC;
+                //add the new bytes
+                firstBlue += 2 * previous[2 * nC] + previous[widthstep + 2 * nC];
+                firstGreen += 2 * previous[2 * nC + 1] + previous[widthstep + 2 * nC + 1];
+                firstRed += 2 * previous[2 * nC + 2] + previous[widthstep + 2 * nC + 2];
+            }
+
+            //Margem esquerda
+            previous = orig;
+            firstBlue = 2 * orig[0] + orig[nC] + 2 * orig[widthstep] + orig[widthstep + nC] + 2 * orig[2 * widthstep]
+                + orig[2 * widthstep + nC];
+            firstGreen = 2 * orig[1] + orig[nC + 1] + 2 * orig[widthstep + 1] + orig[widthstep + nC + 1] + 2 * orig[2 * widthstep + 1]
+                + orig[2 * widthstep + nC + 1];
+            firstRed = 2 * orig[2] + orig[nC + 2] + 2 * orig[widthstep + 2] + orig[widthstep + nC + 2] + 2 * orig[2 * widthstep + 2]
+                + orig[2 * widthstep + nC + 2];
+            for (int y = 1; y < height - 1; y++)
+            {
+                dest = dataPtr + y * widthstep;
+                dest[0] = (byte)Math.Round(firstBlue / 9.0);
+                dest[1] = (byte)Math.Round(firstGreen / 9.0);
+                dest[2] = (byte)Math.Round(firstRed / 9.0);
+                //remove the bytes that are no longer needed
+                firstBlue -= 2 * previous[0] + previous[nC];
+                firstGreen -= 2 * previous[1] + previous[nC + 1];
+                firstRed -= 2 * previous[2] + previous[nC + 2];
+                //move pointer
+                previous += widthstep;
+                //add the new bytes
+                firstBlue += 2 * previous[2 * widthstep] + previous[2 * widthstep + nC];
+                firstGreen += 2 * previous[2 * widthstep + 1] + previous[2 * widthstep + nC + 1];
+                firstRed += 2 * previous[2 * widthstep + 2] + previous[2 * widthstep + nC + 2];
+            }
+
+            //Margem inferior
+            orig = dataPtrCopy + (height - 2) * widthstep;
+            previous = orig;
+            firstBlue = 2 * orig[widthstep] + 2 * orig[widthstep + nC] + 2 * orig[widthstep + 2 * nC]
+                + orig[0] + orig[nC] + orig[2 * nC];
+            firstGreen = 2 * orig[widthstep + 1] + 2 * orig[widthstep + nC + 1] + 2 * orig[widthstep + 2 * nC + 1]
+                + orig[1] + orig[nC + 1] + orig[2 * nC + 1];
+            firstRed = 2 * orig[widthstep + 2] + 2 * orig[widthstep + nC + 2] + 2 * orig[widthstep + 2 * nC + 2]
+                + orig[2] + orig[nC + 2] + orig[2 * nC + 2];
+            for (int x = 1; x < width - 1; x++)
+            {
+                dest = dataPtr + (height - 1) * widthstep + x * nC;
+                dest[0] = (byte)Math.Round(firstBlue / 9.0);
+                dest[1] = (byte)Math.Round(firstGreen / 9.0);
+                dest[2] = (byte)Math.Round(firstRed / 9.0);
+                //remove the bytes that are no longer needed
+                firstBlue -= 2 * previous[widthstep] + previous[0];
+                firstGreen -= 2 * previous[widthstep + 1] + previous[1];
+                firstRed -= 2 * previous[widthstep + 2] + previous[2];
+                //move pointer
+                previous += nC;
+                //add the new bytes
+                firstBlue += 2 * previous[widthstep + 2 * nC] + previous[2 * nC];
+                firstGreen += 2 * previous[widthstep + 2 * nC + 1] + previous[2 * nC + 1];
+                firstRed += 2 * previous[widthstep + 2 * nC + 2] + previous[2 * nC + 2];
+            }
+
+            //Margem direita
+            orig = dataPtrCopy + (width - 2) * nC;
+            previous = orig;
+            firstBlue = orig[0] + 2 * orig[nC] + orig[widthstep] + 2 * orig[widthstep + nC] + orig[2 * widthstep]
+                + 2 * orig[2 * widthstep + nC];
+            firstGreen = orig[1] + 2 * orig[nC + 1] + orig[widthstep + 1] + 2 * orig[widthstep + nC + 1] + orig[2 * widthstep + 1]
+                + 2 * orig[2 * widthstep + nC + 1];
+            firstRed = orig[2] + 2 * orig[nC + 2] + orig[widthstep + 2] + 2 * orig[widthstep + nC + 2] + orig[2 * widthstep + 2]
+                + 2 * orig[2 * widthstep + nC + 2];
+            for (int y = 1; y < height - 1; y++)
+            {
+                dest = dataPtr + y * widthstep + (width - 1) * nC;
+                dest[0] = (byte)Math.Round(firstBlue / 9.0);
+                dest[1] = (byte)Math.Round(firstGreen / 9.0);
+                dest[2] = (byte)Math.Round(firstRed / 9.0);
+                //remove the bytes that are no longer needed
+                firstBlue -= previous[0] + 2 * previous[nC];
+                firstGreen -= previous[1] + 2 * previous[nC + 1];
+                firstRed -= previous[2] + 2 * previous[nC + 2];
+                //move pointer
+                previous += widthstep;
+                //add the new bytes
+                firstBlue += previous[2 * widthstep] + 2 * previous[2 * widthstep + nC];
+                firstGreen += previous[2 * widthstep + 1] + 2 * previous[2 * widthstep + nC + 1];
+                firstRed += previous[2 * widthstep + 2] + 2 * previous[2 * widthstep + nC + 2];
+            }
+            
+            //Canto superior esquerdo
+            dest = dataPtr;
+            orig = dataPtrCopy;
+            dest[0] = (byte)Math.Round((4 * orig[0] + 2 * orig[nC] + 2 * orig[widthstep] + orig[widthstep + nC]) / 9.0);
+            dest[1] = (byte)Math.Round((4 * orig[1] + 2 * orig[nC + 1] + 2 * orig[widthstep + 1] + orig[widthstep + nC + 1]) / 9.0);
+            dest[2] = (byte)Math.Round((4 * orig[2] + 2 * orig[nC + 2] + 2 * orig[widthstep + 2] + orig[widthstep + nC + 2]) / 9.0);
+
+            //Canto superior direito
+            dest = dataPtr + (width - 1) * nC;
+            orig = dataPtrCopy + (width - 2) * nC;
+            dest[0] = (byte)Math.Round((2 * orig[0] + 4 * orig[nC] + orig[widthstep] + 2 * orig[widthstep + nC]) / 9.0);
+            dest[1] = (byte)Math.Round((2 * orig[1] + 4 * orig[nC + 1] + orig[widthstep + 1] + 2 * orig[widthstep + nC + 1]) / 9.0);
+            dest[2] = (byte)Math.Round((2 * orig[2] + 4 * orig[nC + 2] + orig[widthstep + 2] + 2 * orig[widthstep + nC + 2]) / 9.0);
+
+            //Canto inferior esquerdo
+            dest = dataPtr + (height - 1) * widthstep;
+            orig = dataPtrCopy + (height - 2) * widthstep;
+            dest[0] = (byte)Math.Round((2 * orig[0] + orig[nC] + 4 * orig[widthstep] + 2 * orig[widthstep + nC]) / 9.0);
+            dest[1] = (byte)Math.Round((2 * orig[1] + orig[nC + 1] + 4 * orig[widthstep + 1] + 2 * orig[widthstep + nC + 1]) / 9.0);
+            dest[2] = (byte)Math.Round((2 * orig[2] + orig[nC + 2] + 4 * orig[widthstep + 2] + 2 * orig[widthstep + nC + 2]) / 9.0);
+
+            //Canto inferior direito
+            dest = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
+            orig = dataPtrCopy + (height - 2) * widthstep + (width - 2) * nC;
+            dest[0] = (byte)Math.Round((orig[0] + 2 * orig[nC] + 2 * orig[widthstep] + 4 * orig[widthstep + nC]) / 9.0);
+            dest[1] = (byte)Math.Round((orig[1] + 2 * orig[nC + 1] + 2 * orig[widthstep + 1] + 4 * orig[widthstep + nC + 1]) / 9.0);
+            dest[2] = (byte)Math.Round((orig[2] + 2 * orig[nC + 2] + 2 * orig[widthstep + 2] + 4 * orig[widthstep + nC + 2]) / 9.0);
         }
 
         /// <summary>
