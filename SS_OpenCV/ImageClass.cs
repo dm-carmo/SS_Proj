@@ -1538,11 +1538,8 @@ namespace SS_OpenCV
             //Preprocess image
             float[,] gauss = { { 1, 2, 1 }, { 2, 4, 2 }, { 1, 2, 1 } };
             NonUniform(img, img.Copy(), gauss, 16); //noise reduction
-            NonUniform(img, img.Copy(), gauss, 16); //noise reduction
-            NonUniform(img, img.Copy(), gauss, 16); //noise reduction
-            AvgChannel(img); //convert to grayscale
-            Roberts(img, img.Copy()); //edge detection
-            ConvertToBW(img, 50); //binarization
+            ConvertToBW_Otsu(img); //binarization
+            Sobel(img, img.Copy()); //edge detection
 
             MIplImage m = img.MIplImage;
             byte* imgPtr = (byte*)m.imageData.ToPointer();
@@ -1567,19 +1564,20 @@ namespace SS_OpenCV
             }
 
             int halfMaxValue = sfr[maxRow] / 2; //half of the maximal value
-                                                //Search upper limit
+            int halfMaxWithSlack = halfMaxValue - (halfMaxValue / 2); //in case there isnt a row with exact value as halfMaxValue
+            //Search upper limit
             upperLimit = 0;
-            for (int y = maxRow; y >= 0; y--) if (sfr[y] == halfMaxValue || (sfr[y] > halfMaxValue - (halfMaxValue / 2)) && (sfr[y] < halfMaxValue))
+            for (int y = maxRow; y >= 0; y--) if (sfr[y] == halfMaxValue || ((sfr[y] > halfMaxWithSlack) && (sfr[y] < halfMaxValue)))
                 {
-                    upperLimit = y - 3; //upper limit found
+                    upperLimit = y - 1; //upper limit found
                     break;
                 }
 
             //Search lower limit
             lowerLimit = height - 1;
-            for (int y = maxRow; y < height; y++) if (sfr[y] == halfMaxValue || (sfr[y] > halfMaxValue - (halfMaxValue / 2)) && (sfr[y] < halfMaxValue))
+            for (int y = maxRow; y < height; y++) if (sfr[y] == halfMaxValue || ((sfr[y] > halfMaxWithSlack) && (sfr[y] < halfMaxValue)))
                 {
-                    lowerLimit = y + 3; //lower limit found
+                    lowerLimit = y + 1; //lower limit found
                     break;
                 }
 
@@ -1758,7 +1756,7 @@ namespace SS_OpenCV
             }
 
             //Crop lower levels in order to separate chars
-            for (int i = 0; i < sfc.Length; i++) if (sfc[i] < (min * 2)) sfc[i] = 0;
+            for (int i = 0; i < sfc.Length; i++) if (sfc[i] <= (min * 2)) sfc[i] = 0;
 
 
             //Find objects along x axis
