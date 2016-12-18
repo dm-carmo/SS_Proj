@@ -90,14 +90,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SS_OpenCV.exe" size="77248">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SS_OpenCV.exe" size="82368">
       <assemblyIdentity name="SS_OpenCV" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>xGxRLSn2Q08mA8d5J1C3djXySrA=</dsig:DigestValue>
+        <dsig:DigestValue>3EAIoK57MQL171L3bnPPnXvsW7E=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

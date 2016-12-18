@@ -290,6 +290,66 @@ namespace SS_OpenCV
         }
 
         /// <summary>
+        /// Rotates an image using bilinear interpolation
+        /// </summary>
+        /// <param name="img">The image to rotate</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="angle">The angle of rotation (in radians)</param>
+        unsafe public static void Rotation_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float angle)
+        {
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
+
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = img.Width;
+            int height = img.Height;
+            double sine = Math.Sin(angle);
+            double cose = Math.Cos(angle);
+            int cx = width / 2;
+            int cy = height / 2;
+            int padding = widthstep - nC * width; // alignment bytes (padding)
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //inverse rotation: gets the original position of the pixel from the new pixel's coordinates
+                    double nx = (x - cx) * cose - (cy - y) * sine + cx;
+                    double ny = cy - (x - cx) * sine - (cy - y) * cose;
+
+                    int lx = (int)nx;
+                    int uy = (int)ny;
+                    double xdec = nx - lx;
+                    double ydec = ny - uy;
+
+                    byte* luPtr = dataPtrCopy + lx * nC + uy * widthstep;
+                    byte* ruPtr = luPtr + nC;
+                    byte* ldPtr = luPtr + widthstep;
+                    byte* rdPtr = ruPtr + widthstep;
+
+                    if (ny >= 0 && ny < height && nx >= 0 && nx < width)
+                    {
+                        dataPtr[0] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[0] + xdec * ruPtr[0]) + ydec * ((1 - xdec) * ldPtr[0] + xdec * rdPtr[0]));
+                        dataPtr[1] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[1] + xdec * ruPtr[1]) + ydec * ((1 - xdec) * ldPtr[1] + xdec * rdPtr[1]));
+                        dataPtr[2] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[2] + xdec * ruPtr[2]) + ydec * ((1 - xdec) * ldPtr[2] + xdec * rdPtr[2]));
+                    }
+
+                    else //if we're trying to get pixels from outside the original image
+                    {
+                        dataPtr[0] = 0;
+                        dataPtr[1] = 0;
+                        dataPtr[2] = 0;
+                    }
+                    dataPtr += nC;
+
+                }
+                dataPtr += padding;
+            }
+        }
+
+        /// <summary>
         /// Zooms in/out on an image.
         /// top-left corner is (0,0)
         /// </summary>
@@ -299,6 +359,18 @@ namespace SS_OpenCV
         unsafe public static void Scale(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor)
         {
             Scale_point_xy(img, imgCopy, factor, img.Width, img.Height);
+        }
+
+        /// <summary>
+        /// Zooms in/out on an image, using bilinear interpolation.
+        /// top-left corner is (0,0)
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="factor">Zoom factor</param>
+        public static void Scale_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor)
+        {
+            Scale_point_xy_Bilinear(img, imgCopy, factor, img.Width, img.Height);
         }
 
         /// <summary>
@@ -353,7 +425,66 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** NEEDS MARGINS ***
+        /// Zooms in/out on an image, using bilinear interpolation.
+        /// mouseX and mouseY determine the new top-left corner
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="factor">Zoom factor</param>
+        /// <param name="mouseX">Current X position of the mouse</param>
+        /// <param name="mouseY">Current Y position of the mouse</param>
+        unsafe public static void Scale_point_xy_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor, int mouseX, int mouseY)
+        {
+            if (factor == 1 || factor < 0) return;
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
+
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+            int cx = width / 2;
+            int cy = height / 2;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //Gets the original position of the pixel
+                    double nx = (x - cx) / factor + mouseX;
+                    double ny = (y - cy) / factor + mouseY;
+
+                    int lx = (int)nx;
+                    int uy = (int)ny;
+                    double xdec = nx - lx;
+                    double ydec = ny - uy;
+
+                    byte* luPtr = dataPtrCopy + lx * nC + uy * widthstep;
+                    byte* ruPtr = luPtr + nC;
+                    byte* ldPtr = luPtr + widthstep;
+                    byte* rdPtr = ruPtr + widthstep;
+
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+
+                    if (ny >= 0 && ny < height && nx >= 0 && nx < width)
+                    {
+                        dest[0] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[0] + xdec * ruPtr[0]) + ydec * ((1 - xdec) * ldPtr[0] + xdec * rdPtr[0]));
+                        dest[1] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[1] + xdec * ruPtr[1]) + ydec * ((1 - xdec) * ldPtr[1] + xdec * rdPtr[1]));
+                        dest[2] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[2] + xdec * ruPtr[2]) + ydec * ((1 - xdec) * ldPtr[2] + xdec * rdPtr[2]));
+                    }
+
+                    else //if we're trying to get pixels from outside the original image
+                    {
+                        dest[0] = 0;
+                        dest[1] = 0;
+                        dest[2] = 0;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Calculates the mean of an image, using solution A.
         /// Each pixel is replaced by the mean of their neighborhood (3x3)
         /// </summary>
@@ -371,23 +502,208 @@ namespace SS_OpenCV
             int width = m.width;
             int height = m.height;
 
+            byte* dest;
+            byte* orig;
+
+            //Core
             for (int y = 1; y < height - 1; y++)
             {
                 for (int x = 1; x < width - 1; x++)
                 {
-                    byte* dest = dataPtr + y * widthstep + x * nC;
-                    byte* orig = dataPtrCopy + (y - 1) * widthstep + (x - 1) * nC;
+                    dest = dataPtr + y * widthstep + x * nC;
+                    orig = dataPtrCopy + (y - 1) * widthstep + (x - 1) * nC;
                     dest[0] = (byte)Math.Round((orig[0] + orig[nC] + orig[2 * nC] + orig[widthstep] + orig[widthstep + nC] +
-                    orig[widthstep + 2 * nC] + orig[2 * widthstep] + orig[2 * widthstep + nC] + orig[2 * widthstep + 2 * nC]) / 9.0);
+                        orig[widthstep + 2 * nC] + orig[2 * widthstep] + orig[2 * widthstep + nC] + orig[2 * widthstep + 2 * nC]) / 9.0);
                     dest[1] = (byte)Math.Round((orig[1] + orig[nC + 1] + orig[2 * nC + 1] + orig[widthstep + 1] + orig[widthstep + nC + 1] +
-                    orig[widthstep + 2 * nC + 1] + orig[2 * widthstep + 1] + orig[2 * widthstep + nC + 1] + orig[2 * widthstep + 2 * nC + 1]) / 9.0);
+                        orig[widthstep + 2 * nC + 1] + orig[2 * widthstep + 1] + orig[2 * widthstep + nC + 1] + orig[2 * widthstep + 2 * nC + 1]) / 9.0);
                     dest[2] = (byte)Math.Round((orig[2] + orig[nC + 2] + orig[2 * nC + 2] + orig[widthstep + 2] + orig[widthstep + nC + 2] +
-                    orig[widthstep + 2 * nC + 2] + orig[2 * widthstep + 2] + orig[2 * widthstep + nC + 2] + orig[2 * widthstep + 2 * nC + 2]) / 9.0);
-
+                        orig[widthstep + 2 * nC + 2] + orig[2 * widthstep + 2] + orig[2 * widthstep + nC + 2] + orig[2 * widthstep + 2 * nC + 2]) / 9.0);
                 }
             }
 
-            //fazer bordas
+            //Margem superior
+            for (int x = 1; x < width - 1; x++)
+            {
+                dest = dataPtr + x * nC;
+                orig = dataPtrCopy + (x - 1) * nC;
+                dest[0] = (byte)Math.Round((2 * orig[0] + 2 * orig[nC] + 2 * orig[2 * nC] + orig[widthstep] + orig[widthstep + nC] +
+                    orig[widthstep + 2 * nC]) / 9.0);
+                dest[1] = (byte)Math.Round((2 * orig[1] + 2 * orig[nC + 1] + 2 * orig[2 * nC + 1] + orig[widthstep + 1] + orig[widthstep + nC + 1] +
+                    orig[widthstep + 2 * nC + 1]) / 9.0);
+                dest[2] = (byte)Math.Round((2 * orig[2] + 2 * orig[nC + 2] + 2 * orig[2 * nC + 2] + orig[widthstep + 2] + orig[widthstep + nC + 2] +
+                    orig[widthstep + 2 * nC + 2]) / 9.0);
+            }
+
+            //Margem inferior
+            for (int x = 1; x < width - 1; x++)
+            {
+                dest = dataPtr + (height - 1) * widthstep + x * nC;
+                orig = dataPtrCopy + (height - 2) * widthstep + (x - 1) * nC;
+                dest[0] = (byte)Math.Round((orig[0] + orig[nC] + orig[2 * nC] + 2 * orig[widthstep] + 2 * orig[widthstep + nC] +
+                    2 * orig[widthstep + 2 * nC]) / 9.0);
+                dest[1] = (byte)Math.Round((orig[1] + orig[nC + 1] + orig[2 * nC + 1] + 2 * orig[widthstep + 1] + 2 * orig[widthstep + nC + 1] +
+                    2 * orig[widthstep + 2 * nC + 1]) / 9.0);
+                dest[2] = (byte)Math.Round((orig[2] + orig[nC + 2] + orig[2 * nC + 2] + 2 * orig[widthstep + 2] + 2 * orig[widthstep + nC + 2] +
+                    2 * orig[widthstep + 2 * nC + 2]) / 9.0);
+            }
+
+            //Margem esquerda
+            for (int y = 1; y < height - 1; y++)
+            {
+                dest = dataPtr + y * widthstep;
+                orig = dataPtrCopy + (y - 1) * widthstep;
+                dest[0] = (byte)Math.Round((2 * orig[0] + orig[nC] + 2 * orig[widthstep] + orig[widthstep + nC] +
+                    2 * orig[2 * widthstep] + orig[2 * widthstep + nC]) / 9.0);
+                dest[1] = (byte)Math.Round((2 * orig[1] + orig[nC + 1] + 2 * orig[widthstep + 1] + orig[widthstep + nC + 1] +
+                    2 * orig[2 * widthstep + 1] + orig[2 * widthstep + nC + 1]) / 9.0);
+                dest[2] = (byte)Math.Round((2 * orig[2] + orig[nC + 2] + 2 * orig[widthstep + 2] + orig[widthstep + nC + 2] +
+                    2 * orig[2 * widthstep + 2] + orig[2 * widthstep + nC + 2]) / 9.0);
+            }
+
+            //Margem direita
+            for (int y = 1; y < height - 1; y++)
+            {
+                dest = dataPtr + y * widthstep + (width - 1) * nC;
+                orig = dataPtrCopy + (y - 1) * widthstep + (width - 2) * nC;
+                dest[0] = (byte)Math.Round((orig[0] + 2 * orig[nC] + orig[widthstep] + 2 * orig[widthstep + nC] +
+                    orig[2 * widthstep] + 2 * orig[2 * widthstep + nC]) / 9.0);
+                dest[1] = (byte)Math.Round((orig[1] + 2 * orig[nC + 1] + orig[widthstep + 1] + 2 * orig[widthstep + nC + 1] +
+                    orig[2 * widthstep + 1] + 2 * orig[2 * widthstep + nC + 1]) / 9.0);
+                dest[2] = (byte)Math.Round((orig[2] + 2 * orig[nC + 2] + orig[widthstep + 2] + 2 * orig[widthstep + nC + 2] +
+                    orig[2 * widthstep + 2] + 2 * orig[2 * widthstep + nC + 2]) / 9.0);
+            }
+            
+            //Canto superior esquerdo
+            dest = dataPtr;
+            orig = dataPtrCopy;
+            dest[0] = (byte)Math.Round((4 * orig[0] + 2 * orig[nC] + 2 * orig[widthstep] + orig[widthstep + nC]) / 9.0);
+            dest[1] = (byte)Math.Round((4 * orig[1] + 2 * orig[nC + 1] + 2 * orig[widthstep + 1] + orig[widthstep + nC + 1]) / 9.0);
+            dest[2] = (byte)Math.Round((4 * orig[2] + 2 * orig[nC + 2] + 2 * orig[widthstep + 2] + orig[widthstep + nC + 2]) / 9.0);
+
+            //Canto superior direito
+            dest = dataPtr + (width - 1) * nC;
+            orig = dataPtrCopy + (width - 2) * nC;
+            dest[0] = (byte)Math.Round((2 * orig[0] + 4 * orig[nC] + orig[widthstep] + 2 * orig[widthstep + nC]) / 9.0);
+            dest[1] = (byte)Math.Round((2 * orig[1] + 4 * orig[nC + 1] + orig[widthstep + 1] + 2 * orig[widthstep + nC + 1]) / 9.0);
+            dest[2] = (byte)Math.Round((2 * orig[2] + 4 * orig[nC + 2] + orig[widthstep + 2] + 2 * orig[widthstep + nC + 2]) / 9.0);
+
+            //Canto inferior esquerdo
+            dest = dataPtr + (height - 1) * widthstep;
+            orig = dataPtrCopy + (height - 2) * widthstep;
+            dest[0] = (byte)Math.Round((2 * orig[0] + orig[nC] + 4 * orig[widthstep] + 2 * orig[widthstep + nC]) / 9.0);
+            dest[1] = (byte)Math.Round((2 * orig[1] + orig[nC + 1] + 4 * orig[widthstep + 1] + 2 * orig[widthstep + nC + 1]) / 9.0);
+            dest[2] = (byte)Math.Round((2 * orig[2] + orig[nC + 2] + 4 * orig[widthstep + 2] + 2 * orig[widthstep + nC + 2]) / 9.0);
+
+            //Canto inferior direito
+            dest = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
+            orig = dataPtrCopy + (height - 2) * widthstep + (width - 2) * nC;
+            dest[0] = (byte)Math.Round((orig[0] + 2 * orig[nC] + 2 * orig[widthstep] + 4 * orig[widthstep + nC]) / 9.0);
+            dest[1] = (byte)Math.Round((orig[1] + 2 * orig[nC + 1] + 2 * orig[widthstep + 1] + 4 * orig[widthstep + nC + 1]) / 9.0);
+            dest[2] = (byte)Math.Round((orig[2] + 2 * orig[nC + 2] + 2 * orig[widthstep + 2] + 4 * orig[widthstep + nC + 2]) / 9.0);
+
+        }
+
+        /// <summary>
+        /// *** NEEDS MARGINS ***
+        /// Calculates the mean of an image, using solution B.
+        /// Each pixel is replaced by the mean of their neighborhood (3x3)
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        unsafe public static void Mean_solutionB(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        {
+            MIplImage copy = imgCopy.MIplImage;
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
+
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+
+            byte* orig = dataPtrCopy;
+
+            for (int y = 1; y < height - 1; y++)
+            { //calculates the first sum in the row
+                int firstBlue = orig[0] + orig[nC] + orig[2 * nC] + orig[widthstep] + orig[widthstep + nC] +
+                    orig[widthstep + 2 * nC] + orig[2 * widthstep] + orig[2 * widthstep + nC] + orig[2 * widthstep + 2 * nC];
+                int firstGreen = orig[1] + orig[nC + 1] + orig[2 * nC + 1] + orig[widthstep + 1] + orig[widthstep + nC + 1] +
+                orig[widthstep + 2 * nC + 1] + orig[2 * widthstep + 1] + orig[2 * widthstep + nC + 1] + orig[2 * widthstep + 2 * nC + 1];
+                int firstRed = orig[2] + orig[nC + 2] + orig[2 * nC + 2] + orig[widthstep + 2] + orig[widthstep + nC + 2] +
+                orig[widthstep + 2 * nC + 2] + orig[2 * widthstep + 2] + orig[2 * widthstep + nC + 2] + orig[2 * widthstep + 2 * nC + 2];
+
+                //used later
+                byte* previous = orig;
+
+                for (int x = 1; x < width - 1; x++)
+                {
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+                    dest[0] = (byte)Math.Round(firstBlue / 9.0);
+                    dest[1] = (byte)Math.Round(firstGreen / 9.0);
+                    dest[2] = (byte)Math.Round(firstRed / 9.0);
+                    //remove the bytes that are no longer needed
+                    firstBlue -= previous[0] + previous[widthstep] + previous[2 * widthstep];
+                    firstGreen -= previous[1] + previous[widthstep + 1] + previous[2 * widthstep + 1];
+                    firstRed -= previous[2] + previous[widthstep + 2] + previous[2 * widthstep + 2];
+                    //move pointer
+                    previous += nC;
+                    //add the new bytes
+                    firstBlue += previous[2 * nC] + previous[widthstep + 2 * nC] + previous[2 * widthstep + 2 * nC];
+                    firstGreen += previous[2 * nC + 1] + previous[widthstep + 2 * nC + 1] + previous[2 * widthstep + 2 * nC + 1];
+                    firstRed += previous[2 * nC + 2] + previous[widthstep + 2 * nC + 2] + previous[2 * widthstep + 2 * nC + 2];
+                }
+                //move to the next row
+                orig += widthstep;
+            }
+        }
+
+        /// <summary>
+        /// *** TO DO ***
+        /// Calculates the mean of an image, using solution C.
+        /// Each pixel is replaced by the mean of their neighborhood (size x size)
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        /// <param name="size">The size of the filter</param>
+        public static void Mean_solutionC(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, int size)
+        {
+
+        }
+
+        /// <summary>
+        /// Performs the binarization of an image, based on a threshold
+        /// </summary>
+        /// <param name="img">The image to binarize</param>
+        /// <param name="threshold">The binarization threshold</param>
+        unsafe public static void ConvertToBW(Image<Bgr, byte> img, int threshold)
+        {
+            AvgChannel(img); //for best results we should convert the image to grayscale first
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+
+                    if (dest[0] > threshold)
+                    {
+                        dest[0] = dest[1] = dest[2] = 255;
+                    }
+
+                    else
+                    {
+                        dest[0] = dest[1] = dest[2] = 0;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -432,41 +748,6 @@ namespace SS_OpenCV
                 }
             }
             ConvertToBW(img, threshold); //binarizes the image based on the chosen threshold
-        }
-
-        /// <summary>
-        /// Performs the binarization of an image, based on a threshold
-        /// </summary>
-        /// <param name="img">The image to binarize</param>
-        /// <param name="threshold">The binarization threshold</param>
-        unsafe public static void ConvertToBW(Image<Bgr, byte> img, int threshold)
-        {
-            AvgChannel(img); //for best results we should convert the image to grayscale first
-            MIplImage m = img.MIplImage;
-            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-
-            int widthstep = m.widthStep;
-            int nC = m.nChannels;
-            int width = m.width;
-            int height = m.height;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    byte* dest = dataPtr + y * widthstep + x * nC;
-
-                    if (dest[0] > threshold)
-                    {
-                        dest[0] = dest[1] = dest[2] = 255;
-                    }
-
-                    else
-                    {
-                        dest[0] = dest[1] = dest[2] = 0;
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -555,6 +836,185 @@ namespace SS_OpenCV
         unsafe public static void Median(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
             MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
+
+            int nC = m.nChannels;
+            int width = m.width;
+            int widthstep = m.widthStep;
+            int height = m.height;
+
+            int[,] matSum = new int[9, 9];
+
+            // Core
+            // Percorre a vizinhanca e seleciona o pixel com menor distancia
+            for (int y = 1; y < height - 1; y++)
+            {
+                for (int x = 1; x < width - 1; x++)
+                {
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+                    byte* orig = dataPtrCopy + y * widthstep + x * nC;
+
+                    byte* a = (orig - widthstep - nC);
+                    byte* b = (orig - widthstep);
+                    byte* c = (orig - widthstep + nC);
+                    byte* d = (orig - nC);
+                    byte* e = orig;
+                    byte* f = (orig + nC);
+                    byte* g = (orig + widthstep - nC);
+                    byte* h = (orig + widthstep);
+                    byte* i = (orig + widthstep + nC);
+
+                    //Sum (0,0)
+                    int sum = matSum[0, 1] = Math.Abs(a[0] - b[0]) + Math.Abs(a[1] - b[1]) + Math.Abs(a[2] - b[2]);
+                    sum += matSum[0, 2] = Math.Abs(a[0] - c[0]) + Math.Abs(a[1] - c[1]) + Math.Abs(a[2] - c[2]);
+                    sum += matSum[0, 3] = Math.Abs(a[0] - d[0]) + Math.Abs(a[1] - d[1]) + Math.Abs(a[2] - d[2]);
+                    sum += matSum[0, 4] = Math.Abs(a[0] - e[0]) + Math.Abs(a[1] - e[1]) + Math.Abs(a[2] - e[2]);
+                    sum += matSum[0, 5] = Math.Abs(a[0] - f[0]) + Math.Abs(a[1] - f[1]) + Math.Abs(a[2] - f[2]);
+                    sum += matSum[0, 6] = Math.Abs(a[0] - g[0]) + Math.Abs(a[1] - g[1]) + Math.Abs(a[2] - g[2]);
+                    sum += matSum[0, 7] = Math.Abs(a[0] - h[0]) + Math.Abs(a[1] - h[1]) + Math.Abs(a[2] - h[2]);
+                    sum += matSum[0, 8] = Math.Abs(a[0] - i[0]) + Math.Abs(a[1] - i[1]) + Math.Abs(a[2] - i[2]);
+                    byte* pixel = a;
+                    int min = sum;
+
+                    //Sum (0,1)
+                    sum = matSum[0, 1];
+                    sum += matSum[1, 2] = Math.Abs(b[0] - c[0]) + Math.Abs(b[1] - c[1]) + Math.Abs(b[2] - c[2]);
+                    sum += matSum[1, 3] = Math.Abs(b[0] - d[0]) + Math.Abs(b[1] - d[1]) + Math.Abs(b[2] - d[2]);
+                    sum += matSum[1, 4] = Math.Abs(b[0] - e[0]) + Math.Abs(b[1] - e[1]) + Math.Abs(b[2] - e[2]);
+                    sum += matSum[1, 5] = Math.Abs(b[0] - f[0]) + Math.Abs(b[1] - f[1]) + Math.Abs(b[2] - f[2]);
+                    sum += matSum[1, 6] = Math.Abs(b[0] - g[0]) + Math.Abs(b[1] - g[1]) + Math.Abs(b[2] - g[2]);
+                    sum += matSum[1, 7] = Math.Abs(b[0] - h[0]) + Math.Abs(b[1] - h[1]) + Math.Abs(b[2] - h[2]);
+                    sum += matSum[1, 8] = Math.Abs(b[0] - i[0]) + Math.Abs(b[1] - i[1]) + Math.Abs(b[2] - i[2]);
+                    if (sum < min)
+                    {
+                        pixel = b;
+                        min = sum;
+                    }
+
+                    //Sum (0,2)
+                    sum = matSum[0, 2];
+                    sum += matSum[1, 2];
+                    sum += matSum[2, 3] = Math.Abs(c[0] - d[0]) + Math.Abs(c[1] - d[1]) + Math.Abs(c[2] - d[2]);
+                    sum += matSum[2, 4] = Math.Abs(c[0] - e[0]) + Math.Abs(c[1] - e[1]) + Math.Abs(c[2] - e[2]);
+                    sum += matSum[2, 5] = Math.Abs(c[0] - f[0]) + Math.Abs(c[1] - f[1]) + Math.Abs(c[2] - f[2]);
+                    sum += matSum[2, 6] = Math.Abs(c[0] - g[0]) + Math.Abs(c[1] - g[1]) + Math.Abs(c[2] - g[2]);
+                    sum += matSum[2, 7] = Math.Abs(c[0] - h[0]) + Math.Abs(c[1] - h[1]) + Math.Abs(c[2] - h[2]);
+                    sum += matSum[2, 8] = Math.Abs(c[0] - i[0]) + Math.Abs(c[1] - i[1]) + Math.Abs(c[2] - i[2]);
+                    if (sum < min)
+                    {
+                        pixel = c;
+                        min = sum;
+                    }
+
+                    //Sum (1,0)
+                    sum = matSum[0, 3];
+                    sum += matSum[1, 3];
+                    sum += matSum[2, 3];
+                    sum += matSum[3, 4] = Math.Abs(d[0] - e[0]) + Math.Abs(d[1] - e[1]) + Math.Abs(d[2] - e[2]);
+                    sum += matSum[3, 5] = Math.Abs(d[0] - f[0]) + Math.Abs(d[1] - f[1]) + Math.Abs(d[2] - f[2]);
+                    sum += matSum[3, 6] = Math.Abs(d[0] - g[0]) + Math.Abs(d[1] - g[1]) + Math.Abs(d[2] - g[2]);
+                    sum += matSum[3, 7] = Math.Abs(d[0] - h[0]) + Math.Abs(d[1] - h[1]) + Math.Abs(d[2] - h[2]);
+                    sum += matSum[3, 8] = Math.Abs(d[0] - i[0]) + Math.Abs(d[1] - i[1]) + Math.Abs(d[2] - i[2]);
+                    if (sum < min)
+                    {
+                        pixel = d;
+                        min = sum;
+                    }
+
+                    //Sum (1,1)
+                    sum = matSum[0, 4];
+                    sum += matSum[1, 4];
+                    sum += matSum[2, 4];
+                    sum += matSum[3, 4];
+                    sum += matSum[4, 5] = Math.Abs(e[0] - f[0]) + Math.Abs(e[1] - f[1]) + Math.Abs(e[2] - f[2]);
+                    sum += matSum[4, 6] = Math.Abs(e[0] - g[0]) + Math.Abs(e[1] - g[1]) + Math.Abs(e[2] - g[2]);
+                    sum += matSum[4, 7] = Math.Abs(e[0] - h[0]) + Math.Abs(e[1] - h[1]) + Math.Abs(e[2] - h[2]);
+                    sum += matSum[4, 8] = Math.Abs(e[0] - i[0]) + Math.Abs(e[1] - i[1]) + Math.Abs(e[2] - i[2]);
+                    if (sum < min)
+                    {
+                        pixel = e;
+                        min = sum;
+                    }
+
+                    //Sum (1,2)
+                    sum = matSum[0, 5];
+                    sum += matSum[1, 5];
+                    sum += matSum[2, 5];
+                    sum += matSum[3, 5];
+                    sum += matSum[4, 5];
+                    sum += matSum[5, 6] = Math.Abs(f[0] - g[0]) + Math.Abs(f[1] - g[1]) + Math.Abs(f[2] - g[2]);
+                    sum += matSum[5, 7] = Math.Abs(f[0] - h[0]) + Math.Abs(f[1] - h[1]) + Math.Abs(f[2] - h[2]);
+                    sum += matSum[5, 8] = Math.Abs(f[0] - i[0]) + Math.Abs(f[1] - i[1]) + Math.Abs(f[2] - i[2]);
+                    if (sum < min)
+                    {
+                        pixel = f;
+                        min = sum;
+                    }
+
+                    //Sum (2,0)
+                    sum = matSum[0, 6];
+                    sum += matSum[1, 6];
+                    sum += matSum[2, 6];
+                    sum += matSum[3, 6];
+                    sum += matSum[4, 6];
+                    sum += matSum[5, 6];
+                    sum += matSum[6, 7] = Math.Abs(g[0] - h[0]) + Math.Abs(g[1] - h[1]) + Math.Abs(g[2] - h[2]);
+                    sum += matSum[6, 8] = Math.Abs(g[0] - i[0]) + Math.Abs(g[1] - i[1]) + Math.Abs(g[2] - i[2]);
+                    if (sum < min)
+                    {
+                        pixel = g;
+                        min = sum;
+                    }
+
+                    //Sum (2,1)
+                    sum = matSum[0, 7];
+                    sum += matSum[1, 7];
+                    sum += matSum[2, 7];
+                    sum += matSum[3, 7];
+                    sum += matSum[4, 7];
+                    sum += matSum[5, 7];
+                    sum += matSum[6, 7];
+                    sum += matSum[7, 8] = Math.Abs(h[0] - i[0]) + Math.Abs(h[1] - i[1]) + Math.Abs(h[2] - i[2]);
+                    if (sum < min)
+                    {
+                        pixel = h;
+                        min = sum;
+                    }
+
+                    //Sum (2,2)
+                    sum = matSum[0, 8];
+                    sum += matSum[1, 8];
+                    sum += matSum[2, 8];
+                    sum += matSum[3, 8];
+                    sum += matSum[4, 8];
+                    sum += matSum[5, 8];
+                    sum += matSum[6, 8];
+                    sum += matSum[7, 8];
+                    if (sum < min)
+                    {
+                        dest[0] = i[0];
+                        dest[1] = i[1];
+                        dest[2] = i[2];
+                    }
+                    else
+                    {
+                        dest[0] = pixel[0];
+                        dest[1] = pixel[1];
+                        dest[2] = pixel[2];
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs a differential edge detection filter on an image
+        /// </summary>
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        unsafe public static void Diferentiation(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
+        {
+            MIplImage m = img.MIplImage;
             MIplImage copy = imgCopy.MIplImage;
             byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
             byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
@@ -564,188 +1024,131 @@ namespace SS_OpenCV
             int width = m.width;
             int height = m.height;
 
-            for (int y = 1; y < height - 1; y++)
+            //Calculates the filter's value for all pixels except bottom and right margins
+            for (int y = 0; y < height - 1; y++)
             {
-                for (int x = 1; x < width - 1; x++)
-                { //calculates the median for all central pixels
-                    byte* pixelPtr = dataPtr + y * widthstep + x * nC;
-                    byte* pixelPtrCopy = dataPtrCopy + (y - 1) * widthstep + (x - 1) * nC;
-                    CalculateMedian(m, pixelPtrCopy, pixelPtr);
+                for (int x = 0; x < width - 1; x++)
+                {
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+                    byte* currPt = dataPtrCopy + y * widthstep + x * nC;
+                    byte* rightPt = dataPtrCopy + y * widthstep + (x + 1) * nC; //the pixel to the right
+                    byte* downPt = dataPtrCopy + (y + 1) * widthstep + x * nC; //the pixel below
+                    int bsum = Math.Abs(currPt[0] - rightPt[0]) + Math.Abs(currPt[0] - downPt[0]);
+                    int gsum = Math.Abs(currPt[1] - rightPt[1]) + Math.Abs(currPt[1] - downPt[1]);
+                    int rsum = Math.Abs(currPt[2] - rightPt[2]) + Math.Abs(currPt[2] - downPt[2]);
+                    dest[0] = (byte)(bsum > 255 ? 255 : bsum);
+                    dest[1] = (byte)(gsum > 255 ? 255 : gsum);
+                    dest[2] = (byte)(rsum > 255 ? 255 : rsum);
                 }
             }
-            //calculates the median for each corner
-            CalculateMedianCorners(m, dataPtr, dataPtrCopy, 0, 0); //top-left
-            CalculateMedianCorners(m, dataPtr, dataPtrCopy, 0, height - 1); //bottom-left
-            CalculateMedianCorners(m, dataPtr, dataPtrCopy, width - 1, 0); //top-right
-            CalculateMedianCorners(m, dataPtr, dataPtrCopy, width - 1, height - 1); //bottom-right
 
-            for (int x = 1; x < width - 1; x++)
-            { //calculates the median for top and bottom margin pixels
-                byte* pixelPtr = dataPtr + x * nC;
-                byte* pixelPtrCopy = dataPtrCopy + (x - 1) * nC;
-                CalculateMedianMargins(m, pixelPtrCopy, pixelPtr, 1, 0); //top
-                CalculateMedianMargins(m, pixelPtrCopy, pixelPtr, 1, height - 1); //bottom
+            //calculates the filter's value for the right margin
+            for (int y = 0; y < height - 1; y++)
+            {
+                byte* dest = dataPtr + y * widthstep + (width - 1) * nC;
+                byte* currPt = dataPtrCopy + y * widthstep + (width - 1) * nC;
+                //no pixel to the right (margin duplication, difference would be zero)
+                byte* downPt = dataPtrCopy + (y + 1) * widthstep + (width - 1) * nC;
+                int bsum = Math.Abs(currPt[0] - downPt[0]);
+                int gsum = Math.Abs(currPt[1] - downPt[1]);
+                int rsum = Math.Abs(currPt[2] - downPt[2]);
+                dest[0] = (byte)(bsum > 255 ? 255 : bsum);
+                dest[1] = (byte)(gsum > 255 ? 255 : gsum);
+                dest[2] = (byte)(rsum > 255 ? 255 : rsum);
             }
 
-            for (int y = 1; y < height - 1; y++)
-            { //calculates the median for left and right margin pixels
-                byte* pixelPtr = dataPtr + y * widthstep;
-                byte* pixelPtrCopy = dataPtrCopy + (y - 1) * widthstep;
-                CalculateMedianMargins(m, pixelPtrCopy, pixelPtr, 0, 1); //left
-                CalculateMedianMargins(m, pixelPtrCopy, pixelPtr, width - 1, 1); //right
+            //calculates the filter's value for the bottom margin
+            for (int x = 0; x < width - 1; x++)
+            {
+                byte* dest = dataPtr + (height - 1) * widthstep + x * nC;
+                byte* currPt = dataPtrCopy + (height - 1) * widthstep + x * nC;
+                //no pixel below (margin duplication, difference would be zero)
+                byte* rightPt = dataPtrCopy + (height - 1) * widthstep + (x + 1) * nC;
+                int bsum = Math.Abs(currPt[0] - rightPt[0]);
+                int gsum = Math.Abs(currPt[1] - rightPt[1]);
+                int rsum = Math.Abs(currPt[2] - rightPt[2]);
+                dest[0] = (byte)(bsum > 255 ? 255 : bsum);
+                dest[1] = (byte)(gsum > 255 ? 255 : gsum);
+                dest[2] = (byte)(rsum > 255 ? 255 : rsum);
             }
+
+            //bottom-right corner has no one to its right or below, so it becomes black (margin duplication, differences would be zero)
+            dataPtr = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
+            dataPtr[0] = 0;
+            dataPtr[1] = 0;
+            dataPtr[2] = 0;
         }
 
         /// <summary>
-        /// Calculates a pixel's median
+        /// Performs a Roberts filter on an image
         /// </summary>
-        /// <param name="m">Information about an image</param>
-        /// <param name="origPtr">Pointer to the top-left pixel in the respective neighbourhood</param>
-        /// <param name="copyPtr">Pointer to the pixel where we are calculating the median (we will modify this)</param>
-        unsafe private static void CalculateMedian(MIplImage m, byte* origPtr, byte* copyPtr)
+        /// <param name="img">The image</param>
+        /// <param name="imgCopy">A copy of the image</param>
+        unsafe public static void Roberts(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
         {
-            int[,] distMat = new int[9, 9]; //a matrix used to store the distance between any 2 pixels
+            MIplImage m = img.MIplImage;
+            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
+            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
 
-            for (int y = 0; y < 3; y++)
+            int widthstep = m.widthStep;
+            int nC = m.nChannels;
+            int width = m.width;
+            int height = m.height;
+
+            //Calculates the filter's value for all pixels except bottom and right margins
+            for (int y = 0; y < height - 1; y++)
             {
-                for (int x = 0; x < 3; x++)
+                for (int x = 0; x < width - 1; x++)
                 {
-                    byte* startPtr = origPtr + y * m.widthStep + x * m.nChannels; //we are calculating distances between this pixel and all others
-                    for (int i = 0; i < 9; i++)
-                    {
-                        int idx = y * 3 + x;
-                        if (distMat[idx, i] != 0) continue; //we have aleady done this
-                        if (idx == i)
-                        { //distance between a pixel and itself is zero
-                            distMat[idx, i] = 0;
-                            continue;
-                        }
-                        byte* distPtr = origPtr + (i / 3) * m.widthStep + (i % 3) * m.nChannels;
-                        int dist = Math.Abs(startPtr[0] - distPtr[0]) + Math.Abs(startPtr[1] - distPtr[1]) + Math.Abs(startPtr[2] - distPtr[2]);
-                        distMat[idx, i] = distMat[i, idx] = dist; //distance between A-B is the same as B-A
-                    }
+                    byte* dest = dataPtr + y * widthstep + x * nC;
+                    byte* currPt = dataPtrCopy + y * widthstep + x * nC;
+                    byte* rightPt = dataPtrCopy + y * widthstep + (x + 1) * nC; //the pixel to the right
+                    byte* rightdownPt = dataPtrCopy + (y + 1) * widthstep + (x + 1) * nC; //the pixel to the right and below
+                    byte* downPt = dataPtrCopy + (y + 1) * widthstep + x * nC; //the pixel below
+                    int bsum = Math.Abs(currPt[0] - rightdownPt[0]) + Math.Abs(rightPt[0] - downPt[0]);
+                    int gsum = Math.Abs(currPt[1] - rightdownPt[1]) + Math.Abs(rightPt[1] - downPt[1]);
+                    int rsum = Math.Abs(currPt[2] - rightdownPt[2]) + Math.Abs(rightPt[2] - downPt[2]);
+                    dest[0] = (byte)(bsum > 255 ? 255 : bsum);
+                    dest[1] = (byte)(gsum > 255 ? 255 : gsum);
+                    dest[2] = (byte)(rsum > 255 ? 255 : rsum);
                 }
             }
-            int[] distSum = new int[9];
-            //calculates the sum of distances for every pixel
-            for (int i = 0; i < 9; i++) for (int j = 0; j < 9; j++) distSum[i] += distMat[i, j];
-            int newIdx = Array.IndexOf(distSum, distSum.Min()); //chooses the pixel with the smallest distance sum
-            byte* newPtr = origPtr + (newIdx / 3) * m.widthStep + (newIdx % 3) * m.nChannels;
-            copyPtr[0] = newPtr[0];
-            copyPtr[1] = newPtr[1];
-            copyPtr[2] = newPtr[2];
-        }
 
-        /// <summary>
-        /// Calculates a corner pixel's median
-        /// </summary>
-        /// <param name="m">Information about an image</param>
-        /// <param name="origPtr">Pointer to the top-left corner of the image</param>
-        /// <param name="copyPtr">Pointer to the top-left corner of the image (we will modify this)</param>
-        /// <param name="xpos">X position of the corner we are calculating</param>
-        /// <param name="ypos">Y position of the corner we are calculating</param>
-        unsafe private static void CalculateMedianCorners(MIplImage m, byte* origPtr, byte* copyPtr, int xpos, int ypos)
-        {
-            int[,] distMat = new int[4, 4]; //a matrix used to store the distance between any 2 pixels
-                                            //we always start from the top left corner of the neighbourhood so we must check where is that pixel
-            int xsign = (xpos == 0) ? 0 : -1; //top-right and bottom-right, we need to move 1 pixel to the left
-            int ysign = (ypos == 0) ? 0 : -1; //bottom-left and bottom-right, we need to move 1 pixel up
-            byte* cornerPtr = origPtr + (ysign + ypos) * m.widthStep + (xsign + xpos) * m.nChannels; //top-left corner of the neighbourhood
-
-            for (int y = 0; y < 2; y++)
+            //calculates the filter's value for the right margin
+            for (int y = 0; y < height - 1; y++)
             {
-                for (int x = 0; x < 2; x++)
-                {
-                    byte* startPtr = cornerPtr + y * m.widthStep + x * m.nChannels; //we are calculating distances between this pixel and all others
-                    for (int i = 0; i < 4; i++)
-                    {
-                        int idx = y * 2 + x;
-                        if (distMat[idx, i] != 0) continue; //we have already done this
-                        if (idx == i)
-                        { //distance between a pixel and itself is zero
-                            distMat[idx, i] = 0;
-                            continue;
-                        }
-                        byte* distPtr = cornerPtr + (i / 2) * m.widthStep + (i % 2) * m.nChannels;
-                        int dist = Math.Abs(startPtr[0] - distPtr[0]) + Math.Abs(startPtr[1] - distPtr[1]) + Math.Abs(startPtr[2] - distPtr[2]);
-                        distMat[idx, i] = distMat[i, idx] = dist; //distance between A-B is the same as B-A
-                    }
-                }
+                byte* dest = dataPtr + y * widthstep + (width - 1) * nC;
+                byte* currPt = dataPtrCopy + y * widthstep + (width - 1) * nC;
+                //no pixels to the right (margin duplication)
+                byte* downPt = dataPtrCopy + (y + 1) * widthstep + (width - 1) * nC;
+                int bsum = 2 * Math.Abs(currPt[0] - downPt[0]);
+                int gsum = 2 * Math.Abs(currPt[1] - downPt[1]);
+                int rsum = 2 * Math.Abs(currPt[2] - downPt[2]);
+                dest[0] = (byte)(bsum > 255 ? 255 : bsum);
+                dest[1] = (byte)(gsum > 255 ? 255 : gsum);
+                dest[2] = (byte)(rsum > 255 ? 255 : rsum);
             }
-            int[] distSum = new int[4];
-            //calculates the sum of distances for every pixel
-            for (int i = 0; i < 4; i++)
-            { //margin duplication, some pixels are repeated therefore we would have duplicated distances
-              //that is taken care of here
-                int c1 = (ypos == 0 | xpos == 0 ? (xpos == ypos ? 4 : 2) : 1);
-                int c2 = (ypos == 0 & xpos != 0 ? 4 : (ypos != 0 ? 1 : 2));
-                int c3 = (xpos == 0 & ypos != 0 ? 4 : (xpos != 0 ? 1 : 2));
-                int c4 = (ypos != 0 | xpos != 0 ? 4 : (xpos == ypos & xpos == 0 ? 1 : 2));
-                distSum[i] = c1 * distMat[i, 0] + c2 * distMat[i, 1] + c3 * distMat[i, 2] + c4 * distMat[i, 3];
-            }
-            int newIdx = Array.IndexOf(distSum, distSum.Min()); //chooses the pixel with the smallest distance sum
-            byte* newPtr = cornerPtr + (newIdx / 2) * m.widthStep + (newIdx % 2) * m.nChannels;
-            copyPtr[0] = newPtr[0];
-            copyPtr[1] = newPtr[1];
-            copyPtr[2] = newPtr[2];
-        }
 
-        /// <summary>
-        /// Calculates a pixel's median, if it is part of the image margin
-        /// </summary>
-        /// <param name="m">Information about an image</param>
-        /// <param name="origPtr">Pointer to the top-left pixel in the neighbourhood</param>
-        /// <param name="copyPtr">Pointer to the pixel where we are calculating the median (we will modify this)</param>
-        /// <param name="xpos">X position of the first pixel in the margin</param>
-        /// <param name="ypos">Y position of the first pixel in the margin</param>
-        unsafe private static void CalculateMedianMargins(MIplImage m, byte* origPtr, byte* copyPtr, int xpos, int ypos)
-        {
-            int[,] distMat = new int[6, 6]; //a matrix used to store the distance between any 2 pixels
-                                            //to check whether we are in the X axis or the Y axis
-            int xmax = (ypos == 1) ? 2 : 3;
-            int ymax = (xpos == 1) ? 2 : 3;
-
-            for (int y = 0; y < ymax; y++)
+            //calculates the filter's value for the bottom margin
+            for (int x = 0; x < width - 1; x++)
             {
-                for (int x = 0; x < xmax; x++)
-                {
-                    byte* startPtr = origPtr + y * m.widthStep + x * m.nChannels; //we are calculating distances between this pixel and all others
-                    for (int i = 0; i < 6; i++)
-                    {
-                        int idx = y * xmax + x;
-                        if (distMat[idx, i] != 0) continue; //we have already done this
-                        if (idx == i)
-                        { //distance between a pixel and itself is zero
-                            distMat[idx, i] = 0;
-                            continue;
-                        }
-                        byte* distPtr = startPtr + (i / xmax) * m.widthStep + (i % xmax) * m.nChannels;
-                        int dist = Math.Abs(startPtr[0] - distPtr[0]) + Math.Abs(startPtr[1] - distPtr[1]) + Math.Abs(startPtr[2] - distPtr[2]);
-                        distMat[idx, i] = distMat[i, idx] = dist; //distance between A-B is the same as B-A
-                    }
-                }
+                byte* dest = dataPtr + (height - 1) * widthstep + x * nC;
+                byte* currPt = dataPtrCopy + (height - 1) * widthstep + x * nC;
+                //no pixels below (margin duplication)
+                byte* rightPt = dataPtrCopy + (height - 1) * widthstep + (x + 1) * nC;
+                int bsum = 2 * Math.Abs(currPt[0] - rightPt[0]);
+                int gsum = 2 * Math.Abs(currPt[1] - rightPt[1]);
+                int rsum = 2 * Math.Abs(currPt[2] - rightPt[2]);
+                dest[0] = (byte)(bsum > 255 ? 255 : bsum);
+                dest[1] = (byte)(gsum > 255 ? 255 : gsum);
+                dest[2] = (byte)(rsum > 255 ? 255 : rsum);
             }
-            int[] distSum = new int[6];
-            //calculates the sum of distances for every pixel
-            for (int i = 0; i < 6; i++)
-            { //margin duplication, some pixels are repeated therefore we would have duplicated distances
-              //that is taken care of here
-                int c1 = (ypos == 0 | xpos == 0 ? 2 : 1);
-                int c2 = (ypos == 0 | xpos == 0 ? 1 : 2);
-                int j;
-                //X axis margins duplicate top/bottom row of pixels (0, 1, 2 / 3, 4, 5 in our matrix)
-                //Y axis margins duplicate left/right row of pixels (0, 2, 4 / 1, 3, 5 in our matrix)
-                //all of this depends on how many pixels belong to the original image in the X axis
-                int inc = (xmax == 2) ? 2 : 1;
-                int cond = (xmax == 2) ? 3 : 6;
-                for (j = 0; j < cond; j += inc) distSum[i] += c1 * distMat[i, j];
-                for (j = (xmax == 2) ? 1 : cond; j < cond; j += inc) distSum[i] += c2 * distMat[i, j];
-            }
-            int newIdx = Array.IndexOf(distSum, distSum.Min()); //chooses the pixel with the smallest distance sum
-            byte* newPtr = origPtr + (newIdx / xmax) * m.widthStep + (newIdx % xmax) * m.nChannels;
-            copyPtr[0] = newPtr[0];
-            copyPtr[1] = newPtr[1];
-            copyPtr[2] = newPtr[2];
+
+            //bottom-right corner has no one to its right or below, so it becomes black (margin duplication, differences would be zero)
+            dataPtr = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
+            dataPtr[0] = 0;
+            dataPtr[1] = 0;
+            dataPtr[2] = 0;
         }
 
         /// <summary>
@@ -959,78 +1362,6 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// Performs a differential edge detection filter on an image
-        /// </summary>
-        /// <param name="img">The image</param>
-        /// <param name="imgCopy">A copy of the image</param>
-        unsafe public static void Diferentiation(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
-        {
-            MIplImage m = img.MIplImage;
-            MIplImage copy = imgCopy.MIplImage;
-            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte* dataPtrCopy = (byte*)copy.imageData.ToPointer(); // Pointer to the image copy
-
-            int widthstep = m.widthStep;
-            int nC = m.nChannels;
-            int width = m.width;
-            int height = m.height;
-
-            //Calculates the filter's value for all pixels except bottom and right margins
-            for (int y = 0; y < height - 1; y++)
-            {
-                for (int x = 0; x < width - 1; x++)
-                {
-                    byte* dest = dataPtr + y * widthstep + x * nC;
-                    byte* currPt = dataPtrCopy + y * widthstep + x * nC;
-                    byte* rightPt = dataPtrCopy + y * widthstep + (x + 1) * nC; //the pixel to the right
-                    byte* downPt = dataPtrCopy + (y + 1) * widthstep + x * nC; //the pixel below
-                    int bsum = Math.Abs(currPt[0] - rightPt[0]) + Math.Abs(currPt[0] - downPt[0]);
-                    int gsum = Math.Abs(currPt[1] - rightPt[1]) + Math.Abs(currPt[1] - downPt[1]);
-                    int rsum = Math.Abs(currPt[2] - rightPt[2]) + Math.Abs(currPt[2] - downPt[2]);
-                    dest[0] = (byte)(bsum > 255 ? 255 : bsum);
-                    dest[1] = (byte)(gsum > 255 ? 255 : gsum);
-                    dest[2] = (byte)(rsum > 255 ? 255 : rsum);
-                }
-            }
-
-            //calculates the filter's value for the right margin
-            for (int y = 0; y < height - 1; y++)
-            {
-                byte* dest = dataPtr + y * widthstep + (width - 1) * nC;
-                byte* currPt = dataPtrCopy + y * widthstep + (width - 1) * nC;
-                //no pixel to the right (margin duplication, difference would be zero)
-                byte* downPt = dataPtrCopy + (y + 1) * widthstep + (width - 1) * nC;
-                int bsum = Math.Abs(currPt[0] - downPt[0]);
-                int gsum = Math.Abs(currPt[1] - downPt[1]);
-                int rsum = Math.Abs(currPt[2] - downPt[2]);
-                dest[0] = (byte)(bsum > 255 ? 255 : bsum);
-                dest[1] = (byte)(gsum > 255 ? 255 : gsum);
-                dest[2] = (byte)(rsum > 255 ? 255 : rsum);
-            }
-
-            //calculates the filter's value for the bottom margin
-            for (int x = 0; x < width - 1; x++)
-            {
-                byte* dest = dataPtr + (height - 1) * widthstep + x * nC;
-                byte* currPt = dataPtrCopy + (height - 1) * widthstep + x * nC;
-                //no pixel below (margin duplication, difference would be zero)
-                byte* rightPt = dataPtrCopy + (height - 1) * widthstep + (x + 1) * nC;
-                int bsum = Math.Abs(currPt[0] - rightPt[0]);
-                int gsum = Math.Abs(currPt[1] - rightPt[1]);
-                int rsum = Math.Abs(currPt[2] - rightPt[2]);
-                dest[0] = (byte)(bsum > 255 ? 255 : bsum);
-                dest[1] = (byte)(gsum > 255 ? 255 : gsum);
-                dest[2] = (byte)(rsum > 255 ? 255 : rsum);
-            }
-
-            //bottom-right corner has no one to its right or below, so it becomes black (margin duplication, differences would be zero)
-            dataPtr = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
-            dataPtr[0] = 0;
-            dataPtr[1] = 0;
-            dataPtr[2] = 0;
-        }
-
-        /// <summary>
         /// Performs a non-uniform filter on an image
         /// </summary>
         /// <param name="img">The image</param>
@@ -1217,103 +1548,6 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// *** TO DO ***
-        /// Calculates the mean of an image, using solution B.
-        /// Each pixel is replaced by the mean of their neighborhood (3x3)
-        /// </summary>
-        /// <param name="img">The image</param>
-        /// <param name="imgCopy">A copy of the image</param>
-        public static void Mean_solutionB(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
-        {
-
-        }
-
-        /// <summary>
-        /// *** TO DO ***
-        /// Calculates the mean of an image, using solution C.
-        /// Each pixel is replaced by the mean of their neighborhood (size x size)
-        /// </summary>
-        /// <param name="img">The image</param>
-        /// <param name="imgCopy">A copy of the image</param>
-        /// <param name="size">The size of the filter</param>
-        public static void Mean_solutionC(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, int size)
-        {
-
-        }
-
-        /// <summary>
-        /// Performs a Roberts filter on an image
-        /// </summary>
-        /// <param name="img">The image</param>
-        /// <param name="imgCopy">A copy of the image</param>
-        unsafe public static void Roberts(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy)
-        {
-            MIplImage m = img.MIplImage;
-            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
-
-            int widthstep = m.widthStep;
-            int nC = m.nChannels;
-            int width = m.width;
-            int height = m.height;
-
-            //Calculates the filter's value for all pixels except bottom and right margins
-            for (int y = 0; y < height - 1; y++)
-            {
-                for (int x = 0; x < width - 1; x++)
-                {
-                    byte* dest = dataPtr + y * widthstep + x * nC;
-                    byte* currPt = dataPtrCopy + y * widthstep + x * nC;
-                    byte* rightPt = dataPtrCopy + y * widthstep + (x + 1) * nC; //the pixel to the right
-                    byte* rightdownPt = dataPtrCopy + (y + 1) * widthstep + (x + 1) * nC; //the pixel to the right and below
-                    byte* downPt = dataPtrCopy + (y + 1) * widthstep + x * nC; //the pixel below
-                    int bsum = Math.Abs(currPt[0] - rightdownPt[0]) + Math.Abs(rightPt[0] - downPt[0]);
-                    int gsum = Math.Abs(currPt[1] - rightdownPt[1]) + Math.Abs(rightPt[1] - downPt[1]);
-                    int rsum = Math.Abs(currPt[2] - rightdownPt[2]) + Math.Abs(rightPt[2] - downPt[2]);
-                    dest[0] = (byte)(bsum > 255 ? 255 : bsum);
-                    dest[1] = (byte)(gsum > 255 ? 255 : gsum);
-                    dest[2] = (byte)(rsum > 255 ? 255 : rsum);
-                }
-            }
-
-            //calculates the filter's value for the right margin
-            for (int y = 0; y < height - 1; y++)
-            {
-                byte* dest = dataPtr + y * widthstep + (width - 1) * nC;
-                byte* currPt = dataPtrCopy + y * widthstep + (width - 1) * nC;
-                //no pixels to the right (margin duplication)
-                byte* downPt = dataPtrCopy + (y + 1) * widthstep + (width - 1) * nC;
-                int bsum = 2 * Math.Abs(currPt[0] - downPt[0]);
-                int gsum = 2 * Math.Abs(currPt[1] - downPt[1]);
-                int rsum = 2 * Math.Abs(currPt[2] - downPt[2]);
-                dest[0] = (byte)(bsum > 255 ? 255 : bsum);
-                dest[1] = (byte)(gsum > 255 ? 255 : gsum);
-                dest[2] = (byte)(rsum > 255 ? 255 : rsum);
-            }
-
-            //calculates the filter's value for the bottom margin
-            for (int x = 0; x < width - 1; x++)
-            {
-                byte* dest = dataPtr + (height - 1) * widthstep + x * nC;
-                byte* currPt = dataPtrCopy + (height - 1) * widthstep + x * nC;
-                //no pixels below (margin duplication)
-                byte* rightPt = dataPtrCopy + (height - 1) * widthstep + (x + 1) * nC;
-                int bsum = 2 * Math.Abs(currPt[0] - rightPt[0]);
-                int gsum = 2 * Math.Abs(currPt[1] - rightPt[1]);
-                int rsum = 2 * Math.Abs(currPt[2] - rightPt[2]);
-                dest[0] = (byte)(bsum > 255 ? 255 : bsum);
-                dest[1] = (byte)(gsum > 255 ? 255 : gsum);
-                dest[2] = (byte)(rsum > 255 ? 255 : rsum);
-            }
-
-            //bottom-right corner has no one to its right or below, so it becomes black (margin duplication, differences would be zero)
-            dataPtr = dataPtr + (height - 1) * widthstep + (width - 1) * nC;
-            dataPtr[0] = 0;
-            dataPtr[1] = 0;
-            dataPtr[2] = 0;
-        }
-
-        /// <summary>
         /// *** NOT PERFECT ***
         /// Finds a license plate in an image and returns its location and respective characters
         /// </summary>
@@ -1336,9 +1570,9 @@ namespace SS_OpenCV
         /// <param name="LP_Month">The license plate's month</param>
         /// <param name="LP_Year">The license plate's year</param>
         public static void LP_Recognition(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, out Rectangle LP_Location, out Rectangle LP_Chr1,
-        out Rectangle LP_Chr2, out Rectangle LP_Chr3, out Rectangle LP_Chr4, out Rectangle LP_Chr5, out Rectangle LP_Chr6,
-        out string LP_C1, out string LP_C2, out string LP_C3, out string LP_C4, out string LP_C5, out string LP_C6,
-        out string LP_Country, out string LP_Month, out string LP_Year)
+            out Rectangle LP_Chr2, out Rectangle LP_Chr3, out Rectangle LP_Chr4, out Rectangle LP_Chr5, out Rectangle LP_Chr6,
+            out string LP_C1, out string LP_C2, out string LP_C3, out string LP_C4, out string LP_C5, out string LP_C6,
+            out string LP_Country, out string LP_Month, out string LP_Year)
         {
 
             string path = "../../Resources/characters";
@@ -1355,18 +1589,14 @@ namespace SS_OpenCV
 
             Locate_LP_Chars(img.Copy(), LP_Location, out LP_Chr1, out LP_Chr2, out LP_Chr3, out LP_Chr4, out LP_Chr5, out LP_Chr6);
 
-            LP_C1 = CharacterRecognition(imgCopy, LP_Chr1, charList);
-            LP_C2 = CharacterRecognition(imgCopy, LP_Chr2, charList);
-            LP_C3 = CharacterRecognition(imgCopy, LP_Chr3, charList);
-            LP_C4 = CharacterRecognition(imgCopy, LP_Chr4, charList);
-            LP_C5 = CharacterRecognition(imgCopy, LP_Chr5, charList);
-            LP_C6 = CharacterRecognition(imgCopy, LP_Chr6, charList);
+            CharacterRecognition(imgCopy, LP_Chr1, LP_Chr2, LP_Chr3, LP_Chr4, LP_Chr5, LP_Chr6, charList,
+                out LP_C1, out LP_C2, out LP_C3, out LP_C4, out LP_C5, out LP_C6);
             LP_Country = "";
             LP_Month = "";
             LP_Year = "";
 
             //debug only (draw lines)
-            DebugDrawLines(img, LP_Location, LP_Chr1, LP_Chr2, LP_Chr3, LP_Chr4, LP_Chr5, LP_Chr6);
+            //DebugDrawLines(img, LP_Location, LP_Chr1, LP_Chr2, LP_Chr3, LP_Chr4, LP_Chr5, LP_Chr6);
         }
 
         /// <summary>
@@ -1382,7 +1612,7 @@ namespace SS_OpenCV
         /// <param name="LP_C5">License plate character 5</param>
         /// <param name="LP_C6">License plate character 6</param>
         unsafe private static void DebugDrawLines(Image<Bgr, byte> img, Rectangle LP_Location, Rectangle LP_C1,
-        Rectangle LP_C2, Rectangle LP_C3, Rectangle LP_C4, Rectangle LP_C5, Rectangle LP_C6)
+            Rectangle LP_C2, Rectangle LP_C3, Rectangle LP_C4, Rectangle LP_C5, Rectangle LP_C6)
         {
             MIplImage m = img.MIplImage;
             byte* imgPtr = (byte*)m.imageData.ToPointer();
@@ -1394,16 +1624,14 @@ namespace SS_OpenCV
             //LP_Location
             for (int y = LP_Location.Top; y < LP_Location.Bottom; y++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + y * widthstep + LP_Location.Left * nC;
+                byte* pixelPtr = imgPtr + y * widthstep + LP_Location.Left * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + y * widthstep + (LP_Location.Right - 1) * nC;
                 pixelPtr[1] = 255;
             }
             for (int x = LP_Location.Left; x < LP_Location.Right; x++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + LP_Location.Top * widthstep + x * nC;
+                byte* pixelPtr = imgPtr + LP_Location.Top * widthstep + x * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + (LP_Location.Bottom - 1) * widthstep + x * nC;
                 pixelPtr[1] = 255;
@@ -1411,16 +1639,14 @@ namespace SS_OpenCV
             //LP_C1
             for (int y = LP_C1.Top; y < LP_C1.Bottom; y++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + y * widthstep + LP_C1.Left * nC;
+                byte* pixelPtr = imgPtr + y * widthstep + LP_C1.Left * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + y * widthstep + (LP_C1.Right - 1) * nC;
                 pixelPtr[1] = 255;
             }
             for (int x = LP_C1.Left; x < LP_C1.Right; x++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + LP_C1.Top * widthstep + x * nC;
+                byte* pixelPtr = imgPtr + LP_C1.Top * widthstep + x * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + (LP_C1.Bottom - 1) * widthstep + x * nC;
                 pixelPtr[1] = 255;
@@ -1428,16 +1654,14 @@ namespace SS_OpenCV
             //LP_C2
             for (int y = LP_C2.Top; y < LP_C2.Bottom; y++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + y * widthstep + LP_C2.Left * nC;
+                byte* pixelPtr = imgPtr + y * widthstep + LP_C2.Left * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + y * widthstep + (LP_C2.Right - 1) * nC;
                 pixelPtr[1] = 255;
             }
             for (int x = LP_C2.Left; x < LP_C2.Right; x++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + LP_C2.Top * widthstep + x * nC;
+                byte* pixelPtr = imgPtr + LP_C2.Top * widthstep + x * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + (LP_C2.Bottom - 1) * widthstep + x * nC;
                 pixelPtr[1] = 255;
@@ -1445,16 +1669,14 @@ namespace SS_OpenCV
             //LP_C3
             for (int y = LP_C3.Top; y < LP_C3.Bottom; y++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + y * widthstep + LP_C3.Left * nC;
+                byte* pixelPtr = imgPtr + y * widthstep + LP_C3.Left * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + y * widthstep + (LP_C3.Right - 1) * nC;
                 pixelPtr[1] = 255;
             }
             for (int x = LP_C3.Left; x < LP_C3.Right; x++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + LP_C3.Top * widthstep + x * nC;
+                byte* pixelPtr = imgPtr + LP_C3.Top * widthstep + x * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + (LP_C3.Bottom - 1) * widthstep + x * nC;
                 pixelPtr[1] = 255;
@@ -1462,16 +1684,14 @@ namespace SS_OpenCV
             //LP_C4
             for (int y = LP_C4.Top; y < LP_C4.Bottom; y++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + y * widthstep + LP_C4.Left * nC;
+                byte* pixelPtr = imgPtr + y * widthstep + LP_C4.Left * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + y * widthstep + (LP_C4.Right - 1) * nC;
                 pixelPtr[1] = 255;
             }
             for (int x = LP_C4.Left; x < LP_C4.Right; x++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + LP_C4.Top * widthstep + x * nC;
+                byte* pixelPtr = imgPtr + LP_C4.Top * widthstep + x * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + (LP_C4.Bottom - 1) * widthstep + x * nC;
                 pixelPtr[1] = 255;
@@ -1479,16 +1699,14 @@ namespace SS_OpenCV
             //LP_C5
             for (int y = LP_C5.Top; y < LP_C5.Bottom; y++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + y * widthstep + LP_C5.Left * nC;
+                byte* pixelPtr = imgPtr + y * widthstep + LP_C5.Left * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + y * widthstep + (LP_C5.Right - 1) * nC;
                 pixelPtr[1] = 255;
             }
             for (int x = LP_C5.Left; x < LP_C5.Right; x++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + LP_C5.Top * widthstep + x * nC;
+                byte* pixelPtr = imgPtr + LP_C5.Top * widthstep + x * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + (LP_C5.Bottom - 1) * widthstep + x * nC;
                 pixelPtr[1] = 255;
@@ -1496,16 +1714,14 @@ namespace SS_OpenCV
             //LP_C6
             for (int y = LP_C6.Top; y < LP_C6.Bottom; y++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + y * widthstep + LP_C6.Left * nC;
+                byte* pixelPtr = imgPtr + y * widthstep + LP_C6.Left * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + y * widthstep + (LP_C6.Right - 1) * nC;
                 pixelPtr[1] = 255;
             }
             for (int x = LP_C6.Left; x < LP_C6.Right; x++)
             {
-                byte* pixelPtr;
-                pixelPtr = imgPtr + LP_C6.Top * widthstep + x * nC;
+                byte* pixelPtr = imgPtr + LP_C6.Top * widthstep + x * nC;
                 pixelPtr[1] = 255;
                 pixelPtr = imgPtr + (LP_C6.Bottom - 1) * widthstep + x * nC;
                 pixelPtr[1] = 255;
@@ -1720,7 +1936,7 @@ namespace SS_OpenCV
         /// <param name="LP_Chr5">Location of character 5</param>
         /// <param name="LP_Chr6">Location of character 6</param>
         unsafe private static void Locate_LP_Chars(Image<Bgr, byte> img, Rectangle LP_Location, out Rectangle LP_Chr1,
-        out Rectangle LP_Chr2, out Rectangle LP_Chr3, out Rectangle LP_Chr4, out Rectangle LP_Chr5, out Rectangle LP_Chr6)
+            out Rectangle LP_Chr2, out Rectangle LP_Chr3, out Rectangle LP_Chr4, out Rectangle LP_Chr5, out Rectangle LP_Chr6)
         {
             int upperLimit = LP_Location.Top;
             int lowerLimit = LP_Location.Bottom;
@@ -1828,7 +2044,7 @@ namespace SS_OpenCV
         /// <param name="charWidth">Character width</param>
         /// <param name="charHeight">Character height</param>
         unsafe private static void TrimCharArea(Image<Bgr, byte> img, int LP_UpperLimit, int LP_LowerLimit, int charX,
-        out int charY, int charWidth, out int charHeight)
+            out int charY, int charWidth, out int charHeight)
         {
             MIplImage m = img.MIplImage;
             byte* imgPtr = (byte*)m.imageData.ToPointer();
@@ -1906,19 +2122,107 @@ namespace SS_OpenCV
         }
 
         /// <summary>
-        /// Recognizing a character, based on a character database
+        /// Recognizes the characters in a license plate
         /// </summary>
         /// <param name="img">The image</param>
-        /// <param name="charLoc">A rectangle representing the character's location</param>
-        /// <param name="charList">The character database for the recognition process</param>
-        /// <returns></returns>
-        unsafe private static string CharacterRecognition(Image<Bgr, byte> img, Rectangle charLoc, Dictionary<char, Image<Bgr, byte>> charList)
+        /// <param name="LP_Chr1">The location of the first character</param>
+        /// <param name="LP_Chr2">The location of the second character</param>
+        /// <param name="LP_Chr3">The location of the third character</param>
+        /// <param name="LP_Chr4">The location of the fourth character</param>
+        /// <param name="LP_Chr5">The location of the fifth character</param>
+        /// <param name="LP_Chr6">The location of the sixth character</param>
+        /// <param name="charList">The character database for the recognition</param>
+        /// <param name="LP_C1">The value of the first character</param>
+        /// <param name="LP_C2">The value of the second character</param>
+        /// <param name="LP_C3">The value of the third character</param>
+        /// <param name="LP_C4">The value of the fourth character</param>
+        /// <param name="LP_C5">The value of the fifth character</param>
+        /// <param name="LP_C6">The value of the sixth character</param>
+        private static void CharacterRecognition(Image<Bgr, byte> img, Rectangle LP_Chr1, Rectangle LP_Chr2, Rectangle LP_Chr3, Rectangle LP_Chr4,
+            Rectangle LP_Chr5, Rectangle LP_Chr6, Dictionary<char, Image<Bgr, byte>> charList, out string LP_C1, out string LP_C2, out string LP_C3,
+            out string LP_C4, out string LP_C5, out string LP_C6)
         {
-            string s = "";
-            img.ROI = charLoc;
-            Image<Bgr, byte> charImg = img.Copy();
+            img.ROI = LP_Chr1;
+            Image<Bgr, byte> char1Img = img.Copy();
+            img.ROI = LP_Chr2;
+            Image<Bgr, byte> char2Img = img.Copy();
+            img.ROI = LP_Chr3;
+            Image<Bgr, byte> char3Img = img.Copy();
+            img.ROI = LP_Chr4;
+            Image<Bgr, byte> char4Img = img.Copy();
+            img.ROI = LP_Chr5;
+            Image<Bgr, byte> char5Img = img.Copy();
+            img.ROI = LP_Chr6;
+            Image<Bgr, byte> char6Img = img.Copy();
             img.ROI = Rectangle.Empty;
-            byte* charPtr = (byte*)charImg.MIplImage.imageData.ToPointer();
+
+            //binarizes each character
+            ConvertToBW_Otsu(char1Img);
+            ConvertToBW_Otsu(char2Img);
+            ConvertToBW_Otsu(char3Img);
+            ConvertToBW_Otsu(char4Img);
+            ConvertToBW_Otsu(char5Img);
+            ConvertToBW_Otsu(char6Img);
+
+            //finds the best letter and number match for each character
+            //first index is the letter, second index is the number
+            KeyValuePair<char, int>[] k1 = FindBestMatches(charList, char1Img);
+            KeyValuePair<char, int>[] k2 = FindBestMatches(charList, char2Img);
+            KeyValuePair<char, int>[] k3 = FindBestMatches(charList, char3Img);
+            KeyValuePair<char, int>[] k4 = FindBestMatches(charList, char4Img);
+            KeyValuePair<char, int>[] k5 = FindBestMatches(charList, char5Img);
+            KeyValuePair<char, int>[] k6 = FindBestMatches(charList, char6Img);
+
+            //calculates the difference ratings for each pair
+            int pair1l = k1[0].Value + k2[0].Value;
+            int pair1n = k1[1].Value + k2[1].Value;
+            int pair2l = k3[0].Value + k4[0].Value;
+            int pair2n = k3[1].Value + k4[1].Value;
+            int pair3l = k5[0].Value + k6[0].Value;
+            int pair3n = k5[1].Value + k6[1].Value;
+
+            //for each pair, checks if they look more like 2 letters or 2 numbers
+            //goes from right to left
+            if(pair3l < pair3n)
+            { //can only have 1 pair of letters, rest are numbers
+                LP_C5 = k5[0].Key.ToString();
+                LP_C6 = k6[0].Key.ToString();
+                LP_C3 = k3[1].Key.ToString();
+                LP_C4 = k4[1].Key.ToString();
+                LP_C1 = k1[1].Key.ToString();
+                LP_C2 = k2[1].Key.ToString();
+            }
+            else
+            {
+                LP_C5 = k5[1].Key.ToString();
+                LP_C6 = k6[1].Key.ToString();
+                if (pair2l < pair2n)
+                { //can only have 1 pair of letters, rest are numbers
+                    LP_C3 = k3[0].Key.ToString();
+                    LP_C4 = k4[0].Key.ToString();
+                    LP_C1 = k1[1].Key.ToString();
+                    LP_C2 = k2[1].Key.ToString();
+                }
+                else
+                { //must have 1 pair of letters
+                    LP_C3 = k3[1].Key.ToString();
+                    LP_C4 = k4[1].Key.ToString();
+                    LP_C1 = k1[0].Key.ToString();
+                    LP_C2 = k2[0].Key.ToString();
+                }
+            }
+
+            Console.WriteLine($"License plate: {LP_C1}{LP_C2}-{LP_C3}{LP_C4}-{LP_C5}{LP_C6}");
+        }
+
+        /// <summary>
+        /// Finds the best letter and number match for a character
+        /// </summary>
+        /// <param name="charList">The character database</param>
+        /// <param name="charImg">The character to recognize</param>
+        /// <returns>An array with the best letter match in the first position and the best number match in the second position</returns>
+        private static KeyValuePair<char, int>[] FindBestMatches(Dictionary<char, Image<Bgr, byte>> charList, Image<Bgr, byte> charImg)
+        {
             Dictionary<char, int> counts = new Dictionary<char, int>();
             Dictionary<char, int> assymsExtUp = new Dictionary<char, int>();
             Dictionary<char, int> assymsExtLow = new Dictionary<char, int>();
@@ -1929,13 +2233,10 @@ namespace SS_OpenCV
             Dictionary<char, int> assymsIntLeft = new Dictionary<char, int>();
             Dictionary<char, int> assymsIntRight = new Dictionary<char, int>();
 
-            // aqui fica em b&w
-            ConvertToBW_Otsu(charImg);
-
-            // aqui tentamos reconhecer o caracter
+            //calculates the differences between our character and each character of the database
             foreach (Image<Bgr, byte> i in charList.Values)
             {
-                char c = charList.FirstOrDefault(x => x.Value.Equals(i)).Key;
+                char c = charList.First(x => x.Value.Equals(i)).Key;
 
                 int charCount = CountPixels(charImg);
                 int iCount = CountPixels(i);
@@ -1985,6 +2286,7 @@ namespace SS_OpenCV
                 assymsIntRight.Add(c, assymIntRightDiff);
             }
 
+            //sorts each difference list in descending order
             var countsOrd = counts.OrderBy(x => x.Value);
             var assymsExtUpOrd = assymsExtUp.OrderBy(x => x.Value);
             var assymsExtLowOrd = assymsExtLow.OrderBy(x => x.Value);
@@ -1994,7 +2296,9 @@ namespace SS_OpenCV
             var assymsExtRightOrd = assymsExtRight.OrderBy(x => x.Value);
             var assymsIntLeftOrd = assymsIntLeft.OrderBy(x => x.Value);
             var assymsIntRightOrd = assymsIntRight.OrderBy(x => x.Value);
+
             SortedList<char, int> list = new SortedList<char, int>();
+            //gets the index of each database character in each list and adds them
             foreach (char c in charList.Keys)
             {
                 int i = countsOrd.TakeWhile(x => x.Key != c).Count() + assymsExtUpOrd.TakeWhile(x => x.Key != c).Count()
@@ -2005,11 +2309,11 @@ namespace SS_OpenCV
                 list.Add(c, i);
             }
 
-            s = list.OrderBy(x => x.Value).First().Key.ToString();
+            //picks the letter and number with the smallest index sum
+            KeyValuePair<char, int> kvpl = list.OrderBy(x => x.Value).First(x => x.Key > 58);
+            KeyValuePair<char, int> kvpn = list.OrderBy(x => x.Value).First(x => x.Key < 58);
 
-            Console.WriteLine("This character is a " + s);
-
-            return s;
+            return new KeyValuePair<char, int>[] { kvpl, kvpn };
         }
 
         /// <summary>
@@ -2357,138 +2661,6 @@ namespace SS_OpenCV
             }
 
             return count;
-        }
-
-        /// <summary>
-        /// Rotates an image using bilinear interpolation
-        /// </summary>
-        /// <param name="img">The image to rotate</param>
-        /// <param name="imgCopy">A copy of the image</param>
-        /// <param name="angle">The angle of rotation (in radians)</param>
-        unsafe public static void Rotation_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float angle)
-        {
-            MIplImage m = img.MIplImage;
-            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
-
-            int widthstep = m.widthStep;
-            int nC = m.nChannels;
-            int width = img.Width;
-            int height = img.Height;
-            double sine = Math.Sin(angle);
-            double cose = Math.Cos(angle);
-            int cx = width / 2;
-            int cy = height / 2;
-            int padding = widthstep - nC * width; // alignment bytes (padding)
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    //inverse rotation: gets the original position of the pixel from the new pixel's coordinates
-                    double nx = (x - cx) * cose - (cy - y) * sine + cx;
-                    double ny = cy - (x - cx) * sine - (cy - y) * cose;
-
-                    int lx = (int)nx;
-                    int uy = (int)ny;
-                    double xdec = nx - lx;
-                    double ydec = ny - uy;
-
-                    byte* luPtr = dataPtrCopy + lx * nC + uy * widthstep;
-                    byte* ruPtr = luPtr + nC;
-                    byte* ldPtr = luPtr + widthstep;
-                    byte* rdPtr = ruPtr + widthstep;
-
-                    if (ny >= 0 && ny < height && nx >= 0 && nx < width)
-                    {
-                        dataPtr[0] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[0] + xdec * ruPtr[0]) + ydec * ((1 - xdec) * ldPtr[0] + xdec * rdPtr[0]));
-                        dataPtr[1] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[1] + xdec * ruPtr[1]) + ydec * ((1 - xdec) * ldPtr[1] + xdec * rdPtr[1]));
-                        dataPtr[2] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[2] + xdec * ruPtr[2]) + ydec * ((1 - xdec) * ldPtr[2] + xdec * rdPtr[2]));
-                    }
-
-                    else //if we're trying to get pixels from outside the original image
-                    {
-                        dataPtr[0] = 0;
-                        dataPtr[1] = 0;
-                        dataPtr[2] = 0;
-                    }
-                    dataPtr += nC;
-
-                }
-                dataPtr += padding;
-            }
-        }
-
-        /// <summary>
-        /// Zooms in/out on an image, using bilinear interpolation.
-        /// top-left corner is (0,0)
-        /// </summary>
-        /// <param name="img">The image</param>
-        /// <param name="imgCopy">A copy of the image</param>
-        /// <param name="factor">Zoom factor</param>
-        public static void Scale_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor)
-        {
-            Scale_point_xy_Bilinear(img, imgCopy, factor, img.Width, img.Height);
-        }
-
-        /// <summary>
-        /// Zooms in/out on an image, using bilinear interpolation.
-        /// mouseX and mouseY determine the new top-left corner
-        /// </summary>
-        /// <param name="img">The image</param>
-        /// <param name="imgCopy">A copy of the image</param>
-        /// <param name="factor">Zoom factor</param>
-        /// <param name="mouseX">Current X position of the mouse</param>
-        /// <param name="mouseY">Current Y position of the mouse</param>
-        unsafe public static void Scale_point_xy_Bilinear(Image<Bgr, byte> img, Image<Bgr, byte> imgCopy, float factor, int mouseX, int mouseY)
-        {
-            if (factor == 1 || factor < 0) return;
-            MIplImage m = img.MIplImage;
-            byte* dataPtr = (byte*)m.imageData.ToPointer(); // Pointer to the image
-            byte* dataPtrCopy = (byte*)imgCopy.MIplImage.imageData.ToPointer(); // Pointer to the image copy
-
-            int widthstep = m.widthStep;
-            int nC = m.nChannels;
-            int width = m.width;
-            int height = m.height;
-            int cx = width / 2;
-            int cy = height / 2;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    //Gets the original position of the pixel
-                    double nx = (x - cx) / factor + mouseX;
-                    double ny = (y - cy) / factor + mouseY;
-
-                    int lx = (int)nx;
-                    int uy = (int)ny;
-                    double xdec = nx - lx;
-                    double ydec = ny - uy;
-
-                    byte* luPtr = dataPtrCopy + lx * nC + uy * widthstep;
-                    byte* ruPtr = luPtr + nC;
-                    byte* ldPtr = luPtr + widthstep;
-                    byte* rdPtr = ruPtr + widthstep;
-
-                    byte* dest = dataPtr + y * widthstep + x * nC;
-
-                    if (ny >= 0 && ny < height && nx >= 0 && nx < width)
-                    {
-                        dest[0] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[0] + xdec * ruPtr[0]) + ydec * ((1 - xdec) * ldPtr[0] + xdec * rdPtr[0]));
-                        dest[1] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[1] + xdec * ruPtr[1]) + ydec * ((1 - xdec) * ldPtr[1] + xdec * rdPtr[1]));
-                        dest[2] = (byte)Math.Round((1 - ydec) * ((1 - xdec) * luPtr[2] + xdec * ruPtr[2]) + ydec * ((1 - xdec) * ldPtr[2] + xdec * rdPtr[2]));
-                    }
-
-                    else //if we're trying to get pixels from outside the original image
-                    {
-                        dest[0] = 0;
-                        dest[1] = 0;
-                        dest[2] = 0;
-                    }
-                }
-            }
         }
     }
 }
