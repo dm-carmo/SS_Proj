@@ -3042,6 +3042,7 @@ namespace SS_OpenCV
             }
 
             LP_Location = Locate_License_Plate(img);
+            Console.WriteLine("LP @ (" + LP_Location.Left + "," + LP_Location.Top + ") with width (" + LP_Location.Width + ") and height (" + LP_Location.Height + ")");
 
             Locate_LP_Chars(img.Copy(), LP_Location, out LP_Chr1, out LP_Chr2, out LP_Chr3, out LP_Chr4, out LP_Chr5, out LP_Chr6);
 
@@ -3220,6 +3221,7 @@ namespace SS_OpenCV
             //Preprocess image
             float[,] gauss = { { 1, 2, 1 }, { 2, 4, 2 }, { 1, 2, 1 } };
             NonUniform(img, img.Copy(), gauss, 16); //noise reduction
+            NonUniform(img, img.Copy(), gauss, 16); //noise reduction
             ConvertToBW_Otsu(img); //binarization
             Sobel(img, img.Copy()); //edge detection
 
@@ -3237,7 +3239,7 @@ namespace SS_OpenCV
             for (int y = 0; y < height; y++)
             {
                 sfr[y] = 0;
-                for (int x = 2; x < width - 2; x++)
+                for (int x = 1; x < width - 1; x++)
                 {
                     byte* pixelPtr = imgPtr + y * widthstep + x * nC;
                     byte* pixelPtrPrev = imgPtr + y * widthstep + (x - 1) * nC;
@@ -3247,7 +3249,7 @@ namespace SS_OpenCV
             }
 
             int halfMaxValue = sfr[maxRow] / 2; //half of the maximal value
-            int halfMaxWithSlack = halfMaxValue - (halfMaxValue / 2); //in case there isnt a row with the exact same value as halfMaxValue
+            int halfMaxWithSlack = halfMaxValue / 2; //in case there isnt a row with the exact same value as halfMaxValue
             //Search upwards for the upper limit
             upperLimit = 0;
             for (int y = maxRow; y >= 0; y--) if (sfr[y] == halfMaxValue || ((sfr[y] > halfMaxWithSlack) && (sfr[y] < halfMaxValue)))
@@ -3467,7 +3469,7 @@ namespace SS_OpenCV
                     else
                     {
                         //outside object
-                        if (length > 5)
+                        if (length > 4)
                         {
                             //object was large enough. don't discard
                             int charX, charY, charHeight;
@@ -3486,7 +3488,7 @@ namespace SS_OpenCV
             if (start != -1 && objCount < 6)
             {
                 //did not finish, now outside object
-                if (length > 5)
+                if (length > 4)
                 {
                     //object was large enough. don't discard
                     int charX, charY, charHeight;
